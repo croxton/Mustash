@@ -1,0 +1,190 @@
+/**
+ * Mustash
+ *
+ * @package		Mustash
+ * @author		Mark Croxton
+ * @copyright	Copyright (c) 2013, hallmarkdesign
+ * @link		http://hallmark-design.co.uk/code/mustash
+ * @since		1.0
+ */
+
+
+/* code format
+-------------------------------------------------*/
+.stash_code_format, .stash_code_format:focus {
+	font-family: 'consolas', 'andale mono', 'monaco', monospace;
+	background:#333;
+	color:#AAA;
+	padding:3px;
+	border:0;
+	border-radius:0;
+}
+
+.stash_code_format:focus {
+	background:#222;
+	color:#CCC;
+}
+
+.stash_list {
+	padding-bottom: 1em;
+}
+
+.stash_notes {
+	margin-top: 3px;
+	font-size: .92em;
+}
+
+.stash_errors {
+	background:#fee;
+	border:1px solid #c99;
+	color:#966;
+	padding:14px;
+	margin-bottom:14px;
+	-webkit-border-radius:4px;
+	-moz-border-radius:4px;
+	border-radius:4px;
+	-webkit-box-shadow:2px 2px 3px rgba(0,0,0,0.1);
+	-moz-box-shadow:2px 2px 3px rgba(0,0,0,0.1);
+	box-shadow:2px 2px 3px rgba(0,0,0,0.1);
+}
+
+.stash_errors ul {
+	list-style:square outside;
+	margin-left:14px;
+}
+
+.stash_locked {
+	font-weight: bold;
+}
+
+.stash_icon {
+	font-size: 14px;
+	padding-right: 3px;
+}
+
+.stash_rules {
+	margin-bottom: 1em;
+}
+
+	.stash_rules table {
+		border-collapse: collapse;
+	}
+
+	.stash_rules td {
+		background-color: #ECEFF2 ! important;
+	}
+
+.stash_drag_handle {
+	font-size: 14px;
+}
+
+.stash_remove_row {
+	font-size: 18px;
+	color: #D10053;
+}
+
+.stash_add_row {
+	display: inline-block;
+	cursor: pointer;
+}
+
+.stash_add_row i {
+	font-size: 18px;
+	color: green;
+}
+
+.stash_add_row a {
+	font-size: 14px;
+	color: #657073 ! important;
+	padding-left: 2px;
+}
+
+.stash_add_row a:hover {
+	color: #333 ! important;
+	text-decoration: none;
+}
+
+
+div[aria-expanded="false"] {
+	height:0;
+	overflow: hidden;
+	visibility:hidden;
+}   
+
+div[aria-expanded="true"] {
+	height: auto;
+	visibility:visible;
+    /* max-height:4000px; */
+    transition: 0.25s all ease-in; 
+}  
+
+.stash_btn_help {
+	display: inline-block;
+	background: #D3D9DF;
+	padding: 5px 10px;
+	border: 1px solid #EDF0F4;
+	margin-bottom: -1px;
+	color: #333 ! important;
+}
+
+.stash_btn_help:hover {
+	text-decoration: none ! important;
+	background: #363F48;
+	color: white  ! important;
+}
+
+.stash_btn_help.active {
+	background: #FEF4C7;
+	border-color: #EAD993;
+	color: #333 ! important;
+}
+
+.stash_rules_footer {
+	margin-top: 2em;
+}
+
+	.stash_rules_footer-save {
+		float: left;
+	}
+
+	.stash_rules_footer-help {
+		float: right;
+	}
+
+	.stash_rules_footer:before, .stash_rules_footer:after
+	{
+	    content: " ";
+	    display: table;
+	}
+
+	.stash_rules_footer:after {
+	    clear: both;
+	}
+
+
+.stash_footnote {
+	background: #FEF9E3;
+	border: 1px solid #EAD993;
+	padding: 20px 20px 10px 20px;
+	border-radius: 5px;
+	margin-top: 1em;
+}
+
+	.stash_footnote h4 {
+		color: #827D61 ! important;
+		margin-bottom: .75em;
+	}
+
+	.stash_footnote h5 {
+		font-size: 1em;
+		margin-top: .75em;
+	}
+
+	.stash_footnote h5, .stash_footnote p {
+		margin-left: 1em;
+	}
+
+	.stash_footnote ul {
+		font-family: 'consolas', 'andale mono', 'monaco', monospace;
+		margin: 0 0 1em 1em;
+	}
