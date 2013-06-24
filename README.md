@@ -8,7 +8,8 @@ Mustash is an ExpressionEngine control panel module for managing cached [Stash](
 * Search, filter, edit and delete cached Stash variables and static file caches
 * Flush cache globally, by scope or by bundle
 * Create and edit your own bundles
-* Setup advanced cache-breaking rules
+* Setup advanced cache-breaking rules for core modules and third-party add-ons
+* Extensible plugin architecture
 * Web API with custom hooks
 * Configurable access permissions
 
