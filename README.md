@@ -1,8 +1,6 @@
-#Mustash
+#Mustash 1.0
 
 * Author: [Mark Croxton](http://hallmark-design.co.uk/)
-
-## Version 1.0.0
 
 ## Description
 
