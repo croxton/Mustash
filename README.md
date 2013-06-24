@@ -6,7 +6,7 @@
 
 ## Description
 
-Mustash is an ExpressionEngine control panel module for managing cached [Stash](/croxton/Stash/) variables, bundles and cache-breaking rules.
+Mustash is an ExpressionEngine control panel module for managing cached [Stash](https://github.com/croxton/Stash) variables, bundles and cache-breaking rules.
 
 ## Key features
 * Search, filter, edit and delete cached Stash variables and static file caches
@@ -18,7 +18,7 @@ Mustash is an ExpressionEngine control panel module for managing cached [Stash](
 
 
 ## Installation
-1. Install and configure [Stash](/croxton/Stash/wiki/Installing-%26-upgrading) (version 2.3.8 or later is required)
+1. Install and configure [Stash](https://github.com/croxton/Stash/wiki/Installing-%26-upgrading) (version 2.3.8 or later is required)
 2. Upload the system/expressionengine/third_party/Mustash folder to ./system/expressionengine/third_party/
 3. Upload the themes/third_party/Mustash folder to ./themes/third_party/
 4. In the CP, navigate to Add-ons > Modules and click the 'Install' link for the Mustash module
