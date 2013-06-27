@@ -660,6 +660,7 @@ class mustash_mcp {
 		if ( empty($vars['rules']))
 		{
 			$vars['rules'][] = array(
+				'plugin' 	=> '',
 				'hook' 		=> '',
 				'group_id' 	=> '',
 				'bundle_id' => '',

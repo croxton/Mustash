@@ -42,7 +42,7 @@
                         <optgroup label="<?php echo $p->name?>">
                         <?php foreach($p->get_hooks() as $hook => $markers): ?>
                             <?php $hook = is_array($markers) ? $hook : $markers; ?>
-                            <option value="<?php echo $p->short_name."--".$hook?>"<?php echo( $rule['hook'] == $hook &&  $rule['plugin'] == $p->short_name ? ' selected="selected"' : '');?>><?php echo $hook?></option>
+                            <option value="<?php echo $p->short_name."--".$hook?>"<?php echo( ($rule['hook'] == $hook &&  $rule['plugin'] == $p->short_name) ? ' selected="selected"' : '');?>><?php echo $hook?></option>
                         <?php endforeach; ?>
                         </optgroup> 
                         <?php endforeach; ?>
