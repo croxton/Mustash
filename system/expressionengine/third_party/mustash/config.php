@@ -31,7 +31,7 @@ $config['mod_url_name'] = MUSTASH_MOD_URL;
 
 $config['settings_table'] = 'stash_settings'; 
 $config['rules_table'] = 'stash_rules'; 
-#$config['nsm_addon_updater']['versions_xml'] = 'http://hallmark-design.co.uk/code/stash-commander.xml';
+#$config['nsm_addon_updater']['versions_xml'] = 'http://hallmark-design.co.uk/code/mustash.xml';
 
 
 
