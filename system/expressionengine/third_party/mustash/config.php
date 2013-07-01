@@ -15,7 +15,7 @@ if ( ! defined('MUSTASH_NAME'))
 {
 	define('MUSTASH_NAME',         	'Mustash');
 	define('MUSTASH_CLASS_NAME',   	'Mustash');
-	define('MUSTASH_VERSION',      	'1.0.0');
+	define('MUSTASH_VERSION',      	'1.0.1');
 	define('MUSTASH_DOCS_URL',     	'http://hallmark-design.co.uk/code/mustash/');
 	define('MUSTASH_DESC',  		'Take charge of Stash variables and cache-breaking rules.');
 	define('MUSTASH_MOD_URL',  		strtolower(MUSTASH_CLASS_NAME));
@@ -31,7 +31,7 @@ $config['mod_url_name'] = MUSTASH_MOD_URL;
 
 $config['settings_table'] = 'stash_settings'; 
 $config['rules_table'] = 'stash_rules'; 
-#$config['nsm_addon_updater']['versions_xml'] = 'http://hallmark-design.co.uk/code/mustash.xml';
+#$config['nsm_addon_updater']['versions_xml'] = 'http://hallmark-design.co.uk/code/stash-commander.xml';
 
 
 
