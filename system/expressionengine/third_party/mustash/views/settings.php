@@ -90,7 +90,7 @@
 					<div class="stash_notes"><?php echo lang('plugins_help')?></div>
 				</td>
 				<td>
-					<? foreach($plugin_options AS $plugin => $name): ?>
+					<?php foreach($plugin_options AS $plugin => $name): ?>
 						<label style="display:block;cursor:pointer">
 							<?php echo form_checkbox(array(
 									'name' 	  => 'enabled_plugins[]', 
@@ -99,7 +99,7 @@
 									'checked' => (@in_array($plugin, $settings['enabled_plugins'])),
 								)) . NBS . $name; ?>
 						</label>
-					<? endforeach; ?>
+					<?php endforeach; ?>
 				</td>
 			</tr>
 

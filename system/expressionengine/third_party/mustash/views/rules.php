@@ -133,10 +133,10 @@
                     </select>
                 </td>
                 <td>
-                    <?=form_dropdown('bundle[]', $bundle_select_options, array(), 'id="bundle"').NBS.NBS?>
+                    <?php echo form_dropdown('bundle[]', $bundle_select_options, array(), 'id="bundle"').NBS.NBS?>
                 </td>
                 <td>
-                    <?=form_dropdown('scope[]', $scope_select_options, array(), 'id="scope"').NBS.NBS?> 
+                    <?php echo form_dropdown('scope[]', $scope_select_options, array(), 'id="scope"').NBS.NBS?> 
                 </td>
                 <td>
                     <?php echo form_input('pattern[]') ?>
