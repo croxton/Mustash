@@ -15,7 +15,7 @@ if ( ! defined('MUSTASH_NAME'))
 {
 	define('MUSTASH_NAME',         	'Mustash');
 	define('MUSTASH_CLASS_NAME',   	'Mustash');
-	define('MUSTASH_VERSION',      	'1.0.1');
+	define('MUSTASH_VERSION',      	'1.0.2');
 	define('MUSTASH_DOCS_URL',     	'http://hallmark-design.co.uk/code/mustash/');
 	define('MUSTASH_DESC',  		'Take charge of Stash variables and cache-breaking rules.');
 	define('MUSTASH_MOD_URL',  		strtolower(MUSTASH_CLASS_NAME));
