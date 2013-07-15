@@ -56,7 +56,7 @@ class Mustash_channel_data extends CI_Model
 	 */
 	function get_channel($entry_id)
 	{
-		$result = $this->EE->db->select('channels.channel_id', 'channels.channel_name')
+		$result = $this->EE->db->select('channels.channel_id, channels.channel_name')
 				 		   ->from('channel_titles')
 				 		   ->join('channels', 'channel_titles.channel_id = channels.channel_id', 'left')
 				 		   ->where('channel_titles.entry_id', $entry_id)

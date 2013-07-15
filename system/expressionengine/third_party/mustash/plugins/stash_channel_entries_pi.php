@@ -164,7 +164,7 @@ class Stash_channel_entries_pi extends Mustash_plugin {
 		*/
 
 		// get missing channel data
-		$channel = $this->_get_channel($entry_id);
+		$channel = $this->EE->mustash_channel_data->get_channel($entry_id);
 
 		// prep marker data
 		$markers = array(

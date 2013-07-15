@@ -485,7 +485,7 @@ class Mustash_model extends Stash_model
 	function is_bundle_name_unique($bundle)
 	{
 		$query = $this->db->select('1', FALSE)
-				 		  ->where('bundle_name', $bundle)
+				 		  ->where('BINARY `bundle_name`=', $this->db->escape($bundle), FALSE)
 						  ->get('stash_bundles');
 						
 		return $query->num_rows() == 0;
