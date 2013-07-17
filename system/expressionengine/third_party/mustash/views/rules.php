@@ -42,7 +42,7 @@
                         <optgroup label="<?php echo $p->name?>">
                         <?php foreach($p->get_hooks() as $hook => $markers): ?>
                             <?php $hook = is_array($markers) ? $hook : $markers; ?>
-                            <option value="<?php echo $p->short_name."--".$hook?>"<?php echo( ($rule['hook'] == $hook &&  $rule['plugin'] == $p->short_name) ? ' selected="selected"' : '');?>><?php echo $hook?></option>
+                            <option value="<?php echo $p->short_name."--".$hook?>"<?php echo( ($rule['hook'] == $hook &&  $rule['plugin'] == $p->short_name) ? ' selected="selected"' : '');?>><?php echo stash_translate_hook_name($hook, $p->name)?></option>
                         <?php endforeach; ?>
                         </optgroup> 
                         <?php endforeach; ?>
@@ -102,7 +102,7 @@
                         <optgroup label="<?php echo $p->name?>">
                             <?php foreach($p->get_hooks() as $hook => $markers): ?>
                             <?php $hook = is_array($markers) ? $hook : $markers; ?>
-                            <option value="<?php echo $p->short_name."--".$hook?>"><?php echo $hook?></option>
+                            <option value="<?php echo $p->short_name."--".$hook?>"><?php echo stash_translate_hook_name($hook, $p->name)?></option>
                             <?php endforeach; ?>
                         </optgroup> 
                         <?php endforeach; ?>
@@ -205,14 +205,14 @@
                 <?php foreach($p->get_hooks() as $hook => $markers) : ?>
 
                     <?php if ( is_array($markers)) : ?>
-                    <h5><?php echo $hook ?></h5>
+                    <h5><?php echo stash_translate_hook_name($hook, $p->name) ?></h5>
                     <ul>
                         <?php foreach($markers as $m): ?>
                         <li>{<?php echo $m ?>}</li>
                         <?php endforeach; ?>
                     </ul>
                     <?php else: ?>
-                    <h5><?php echo $markers ?></h5>
+                    <h5><?php echo stash_translate_hook_name($markers, $p->name) ?></h5>
                     <p><?php echo lang('no_markers_defined');?></p>
                     <?php endif; ?>
 
