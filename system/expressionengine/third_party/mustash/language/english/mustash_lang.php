@@ -150,6 +150,8 @@ $lang = array(
 
 'no_markers_defined'			=> 'No markers defined',
 
+'all_hooks'						=> 'all hooks',
+
 // API
 'api_success' 					=> 'Success',
 'api_fail' 						=> 'Internal server error',

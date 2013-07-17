@@ -41,6 +41,13 @@ class Stash_channel_entries_pi extends Mustash_plugin {
 	 * @access 	protected
 	 */
 	protected $hooks = array(
+
+		'@all' => array(
+			'channel_id',
+			'channel_name',
+		    'entry_id',
+		),	
+
 		'entry_submission_end' => array(
 			'channel_id',
 			'channel_name',

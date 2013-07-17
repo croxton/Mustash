@@ -41,10 +41,10 @@ class Stash_low_vars_pi extends Mustash_plugin {
 	 * @access 	protected
 	 */
 	protected $hooks = array(
+		'@all',	
 		'low_variables_post_save',
 		'low_variables_delete'
 	);
-
 
 	/**
 	 * Constructor

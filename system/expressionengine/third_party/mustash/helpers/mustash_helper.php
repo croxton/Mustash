@@ -87,3 +87,26 @@ if ( ! function_exists('stash_zebra'))
 		return (++$i % 2 ? 'odd' : 'even');
 	}
 }
+
+// --------------------------------------------------------------
+
+/**
+ * Hook name
+ *
+ * @param       bool
+ * @return      string
+ */
+if ( ! function_exists('stash_translate_hook_name'))
+{
+	function stash_translate_hook_name($hook, $plugin)
+	{
+		if ($hook === '@all')
+		{
+			return $plugin . ": " .lang('all_hooks');
+		}
+		else
+		{
+			return $hook;
+		}
+	}
+}

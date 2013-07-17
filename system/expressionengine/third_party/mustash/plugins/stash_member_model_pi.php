@@ -42,6 +42,14 @@ class Stash_member_model_pi extends Mustash_plugin {
 	 */
 	protected $hooks = array(
 
+		'@all' => array(
+			'member_id',
+			'screen_name',
+			'username',
+			'group_id',
+			'group_title'
+		),	
+
 		 // EE 2.6.0+
 		'member_create_end' => array(
 			'member_id',

@@ -479,7 +479,10 @@ abstract class Mustash_plugin {
 			{
 				$hook = $markers;
 			}
-			$this->add_hook($hook);
+			if ( $hook !== '@all')
+			{
+				$this->add_hook($hook);
+			}
 		}
 	}
 
@@ -562,6 +565,13 @@ abstract class Mustash_plugin {
 	protected function get_rules($hook = NULL, $markers = array())
 	{
 		$this->EE->load->model('mustash_model');
+
+		// automatically check for rules attached to an @all hook for this plugin
+		if ( ! is_null($hook))
+		{
+			$hook = array($hook, '@all');
+		}
+
 		$rules = $this->EE->mustash_model->get_rules($this->short_name, $hook);
 
 		if ( ! empty($rules))

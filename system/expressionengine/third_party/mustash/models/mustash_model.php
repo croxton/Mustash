@@ -498,10 +498,10 @@ class Mustash_model extends Stash_model
 	*/
 
 	/**
-	 * Return a list of rules for the current site, or for a specific plugin in the current site
+	 * Return a list of rules for a specific plugin / hook(s) in the current site
 	 *
 	 * @param string $plugin
-	 * @param string $hook
+	 * @param mixed $hook
 	 * @return array
 	 */	
     function get_rules($plugin = NULL, $hook = NULL)
@@ -515,7 +515,14 @@ class Mustash_model extends Stash_model
 
     	if ( ! is_null($hook))
     	{
-    		$this->db->where('hook', $hook);
+    		if ( is_array($hook))
+    		{
+    			$this->db->where_in('hook', $hook);
+    		}
+    		else
+    		{
+    			$this->db->where('hook', $hook);
+    		}
     	}
 
     	$query = $this->db->from('stash_rules')
