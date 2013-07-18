@@ -62,12 +62,12 @@ class Stash_low_reorder_pi extends Mustash_plugin {
 	}
 
 	/**
-	 * Get groups for this object
+	 * Set groups for this object
 	 *
-	 * @access	public
+	 * @access	protected
 	 * @return	array
 	 */
-	public function get_groups()
+	protected function set_groups()
 	{
 		return $this->EE->mustash_channel_data->get_channels();
 	}

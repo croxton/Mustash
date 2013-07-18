@@ -57,24 +57,14 @@ class Stash_low_vars_pi extends Mustash_plugin {
 	}
 
 	/**
-	 * Get groups for this object
+	 * Set groups for this object
 	 *
-	 * @access	public
+	 * @access	protected
 	 * @return	array
 	 */
-	public function get_groups()
+	protected function set_groups()
 	{
-		$groups = array();
-
-		if ($low_groups = $this->_get_low_var_groups())
-		{
-			foreach ($low_groups as $group)
-			{
-				$groups[$group['group_id']] = $group['group_label'];
-			}
-		}
-
-		return $groups;
+		return stash_array_column($this->_get_low_var_groups(), 'group_label', 'group_id');
 	}
 
 	/*

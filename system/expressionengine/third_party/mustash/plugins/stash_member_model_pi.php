@@ -88,15 +88,14 @@ class Stash_member_model_pi extends Mustash_plugin {
 	}
 
 	/**
-	 * Get groups for this object
+	 * Set groups for this object
 	 *
-	 * @access	public
+	 * @access	protected
 	 * @return	array
 	 */
-	public function get_groups()
+	protected function set_groups()
 	{
-		$groups = $this->_get_cp_member_groups_column();
-		return $groups ? $groups : array();
+		return stash_array_column($this->_get_cp_member_groups(), 'group_title', 'group_id');
 	}
 
 	/*
@@ -208,22 +207,19 @@ class Stash_member_model_pi extends Mustash_plugin {
 	 * @param	array
 	 * @return	void
 	 */
-	private function _get_cp_member_groups_column()
+	private function _get_cp_member_groups()
 	{
-		$query = $this->EE->db->select('group_id, group_title')
+		$result = $this->EE->db->select('group_id, group_title')
 			       ->from('member_groups')
 			       ->where('can_access_cp', 'y')
 			       ->order_by('group_title', 'asc')
 			       ->get();
 
-		if ($query->num_rows > 0) 
-		{
-			return stash_array_column($query->result_array(), 'group_title', 'group_id');
-		}
-		else
+		if ($result->num_rows() == 0) 
 		{
 			return FALSE;
 		}
+		return $result->result_array();
 	}
 }
 

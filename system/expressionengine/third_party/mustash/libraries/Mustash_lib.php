@@ -454,6 +454,7 @@ abstract class Mustash_plugin {
 	
 	public $EE, $name, $short_name, $version, $priority;
 	protected $hooks = array();
+	protected $groups = array();
 	protected $ext_class_name;
 	protected $ext_version = MUSTASH_VERSION;
 	protected $site_id;
@@ -689,7 +690,23 @@ abstract class Mustash_plugin {
 		);
 	}
 
-	abstract public function get_groups();
+	/**
+	 * Get groups for the plugin
+	 *
+	 * @access     public
+	 * @return     array
+	 */
+	public function get_groups()
+	{
+		if (empty($this->groups))
+		{
+			$this->groups = (array) $this->set_groups();
+		}
+
+		return $this->groups;
+	}
+
+	abstract protected function set_groups();
 }
 
 /* End of file Mustash_lib.php */

@@ -40,7 +40,7 @@ if ( ! function_exists('stash_convert_timestamp'))
  *
  * Accepts a db resultset and returns an array column
  *
- * @param      array
+ * @param      array/boolean
  * @param      string    key of array to use as value
  * @param      string    key of array to use as key (optional)
  * @return     array
@@ -51,15 +51,18 @@ if ( ! function_exists('stash_array_column'))
 	{
 		$array = array();
 
-		foreach ($resultset AS $row)
+		if ($resultset)
 		{
-			if ($key !== FALSE)
+			foreach ($resultset AS $row)
 			{
-				$array[$row[$key]] = $row[$val];
-			}
-			else
-			{
-				$array[] = $row[$val];
+				if ($key !== FALSE)
+				{
+					$array[$row[$key]] = $row[$val];
+				}
+				else
+				{
+					$array[] = $row[$val];
+				}
 			}
 		}
 

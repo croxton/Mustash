@@ -55,12 +55,12 @@ class Stash_structure_pi extends Mustash_plugin {
 	}
 
 	/**
-	 * Get groups for this object
+	 * Set groups for this object
 	 *
-	 * @access	public
+	 * @access	protected
 	 * @return	array
 	 */
-	public function get_groups()
+	protected function set_groups()
 	{
 		return array();
 	}
