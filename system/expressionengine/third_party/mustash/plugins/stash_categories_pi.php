@@ -24,7 +24,7 @@ class Stash_categories_pi extends Mustash_plugin {
 	 * @var 	string
 	 * @access 	public
 	 */
-	public $version = '1.0.0';
+	public $version = '1.0.1';
 
 	/**
 	 * Extension hook priority
@@ -47,7 +47,7 @@ class Stash_categories_pi extends Mustash_plugin {
 			'parent_id',
 			'group_id'
 		),	
-		'category_submission_end'=> array(
+		'category_save'=> array(
 			'cat_id',
 			'cat_url_title',
 			'parent_id',
@@ -59,7 +59,7 @@ class Stash_categories_pi extends Mustash_plugin {
 			'parent_id',
 			'group_id'
 		),
-		'category_reorder_end'=> array(
+		'category_reorder'=> array(
 			'cat_id',
 			'cat_url_title',
 			'parent_id',
@@ -95,15 +95,14 @@ class Stash_categories_pi extends Mustash_plugin {
 	*/
 
 	/**
-	 * Hook: category_submission_end
+	 * Hook: category_save
 	 *
 	 * @access	public
 	 * @param	integer category id
 	 * @param	array category data
-	 * @param	array category custom field data
 	 * @return	void
 	 */
-	public function category_submission_end($cat_id, $data, $fields)
+	public function category_save($cat_id, $data)
 	{
 		// prep markers
 		$markers = array(
@@ -120,34 +119,36 @@ class Stash_categories_pi extends Mustash_plugin {
 	 * Hook: category_delete
 	 *
 	 * @access	public
-	 * @param	integer category id
+	 * @param	array category ids
 	 * @return	void
 	 */
-	public function category_delete($cat_id)
+	public function category_delete($cat_ids)
 	{
-		// hydrate the category
-		$cat = $this->_get_cat($cat_id);
+		foreach($cat_ids as $cat_id)
+		{
+			// hydrate the category
+			$cat = $this->_get_cat($cat_id);
 
-		// prep markers
-		$markers = array(
-			'cat_id' 		=> $cat_id,
-			'cat_url_title' => $cat->cat_url_title,
-			'parent_id'		=> $cat->parent_id,
-			'group_id'		=> $cat->group_id,
-		);
+			// prep markers
+			$markers = array(
+				'cat_id' 		=> $cat_id,
+				'cat_url_title' => $cat->cat_url_title,
+				'parent_id'		=> $cat->parent_id,
+				'group_id'		=> $cat->group_id,
+			);
 
-		$this->flush_cache(__FUNCTION__, $cat->group_id, $markers);
+			$this->flush_cache(__FUNCTION__, $cat->group_id, $markers);
+		}
 	}
 
 	/**
-	 * Hook: category_reorder_end
+	 * Hook: category_reorder
 	 *
 	 * @access	public
 	 * @param	integer category id
-	 * @param	integer category id
 	 * @return	void
 	 */
-	public function category_reorder_end($cat_id, $parent_id, $group_id)
+	public function category_reorder($cat_id)
 	{
 		// hydrate the category
 		$cat = $this->_get_cat($cat_id);
