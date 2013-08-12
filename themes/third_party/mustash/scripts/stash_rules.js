@@ -9,14 +9,14 @@ $(document).ready(function(){
     $('#stash-rules').dynoTable({
         removeClass: '.stash_remove_row',        //class for the clickable row remover
         cloneClass: '.stash_clone_row',          //class for the clickable row cloner
-        addRowTemplateId: '#add-template',  //id for the "add row template" 
-        addRowButtonId: '#add-row',         //id for the clickable add row button, link, etc
-        lastRowRemovable: true,             //If true, ALL rows in the table can be removed, otherwise there will always be at least one row
-        orderable: true,                    //If true, table rows can be rearranged
-        dragHandleClass: ".stash_drag_handle",    //class for the click and draggable drag handle
-        insertFadeSpeed: "slow",            //Fade in speed when row is added
-        removeFadeSpeed: "fast",            //Fade in speed when row is removed
-        hideTableOnEmpty: true,             //If true, table is completely hidden when empty
+        addRowTemplateId: '#add-template',       //id for the "add row template" 
+        addRowButtonId: '#add-row',              //id for the clickable add row button, link, etc
+        lastRowRemovable: true,                  //If true, ALL rows in the table can be removed, otherwise there will always be at least one row
+        orderable: true,                         //If true, table rows can be rearranged
+        dragHandleClass: ".stash_drag_handle",   //class for the click and draggable drag handle
+        insertFadeSpeed: "slow",                 //Fade in speed when row is added
+        removeFadeSpeed: "fast",                 //Fade in speed when row is removed
+        hideTableOnEmpty: true,                  //If true, table is completely hidden when empty
         onRowRemove: function(){
             //Do something when a row is removed
         },

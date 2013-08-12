@@ -8,9 +8,6 @@
  * @since		1.0
  */
 
-
-/* code format
--------------------------------------------------*/
 .stash_code_format, .stash_code_format:focus {
 	font-family: 'consolas', 'andale mono', 'monaco', monospace;
 	background:#333;
@@ -21,7 +18,7 @@
 }
 
 .stash_code_format:focus {
-	background:#222;
+	background:#1F2B33;
 	color:#CCC;
 }
 
@@ -34,6 +31,10 @@
 	font-size: .92em;
 }
 
+.stash_instructions {
+	margin: 0 0 1em 1.5em;
+}
+
 .stash_errors {
 	background:#fee;
 	border:1px solid #c99;
@@ -43,14 +44,11 @@
 	-webkit-border-radius:4px;
 	-moz-border-radius:4px;
 	border-radius:4px;
-	-webkit-box-shadow:2px 2px 3px rgba(0,0,0,0.1);
-	-moz-box-shadow:2px 2px 3px rgba(0,0,0,0.1);
-	box-shadow:2px 2px 3px rgba(0,0,0,0.1);
 }
 
 .stash_errors ul {
 	list-style:square outside;
-	margin-left:14px;
+	margin-left:15px;
 }
 
 .stash_locked {
@@ -160,7 +158,6 @@ div[aria-expanded="true"] {
 	.stash_rules_footer:after {
 	    clear: both;
 	}
-
 
 .stash_footnote {
 	background: #FEF9E3;
