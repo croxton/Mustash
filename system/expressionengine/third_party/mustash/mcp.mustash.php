@@ -816,7 +816,8 @@ class mustash_mcp {
 		}
 		else
 		{
-			$this->errors[] = "You need to set 'stash_static_basepath' and 'stash_static_url' in your config";
+			$this->errors[] = lang('error_missing_static_config');
+			return $this->_load_view('errors');
 		}
 	}
 

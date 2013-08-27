@@ -115,7 +115,11 @@ class Mustash_lib
   	{
   		$this->EE->load->helper('directory');
 		$plugins = directory_map(PATH_THIRD . $this->mod_name . '/plugins', 1);
-		$plugins = preg_filter('/^(stash_[a-zA-Z0-9_-]+_pi)'.EXT.'$/i', '$1', $plugins);
+
+		# PHP 5.3+ only
+		#$plugins = preg_filter('/^(stash_[a-zA-Z0-9_-]+_pi)'.EXT.'$/i', '$1', $plugins);
+		$result = preg_replace('/^(stash_[a-zA-Z0-9_-]+_pi)'.EXT.'$/i', '$1', $plugins);
+		$plugins = array_diff($result, $plugins);
 
 		return $plugins;
   	}
@@ -463,7 +467,11 @@ abstract class Mustash_plugin {
 	{
 		$this->EE = get_instance();
 		$this->ext_class_name = MUSTASH_CLASS_NAME . '_ext';
-		$this->short_name = preg_filter('/^Stash_([a-zA-Z0-9_-]+)_pi$/i', '$1', get_class($this));
+
+		# PHP 5.3+ only
+		#$this->short_name = preg_filter('/^Stash_([a-zA-Z0-9_-]+)_pi$/i', '$1', get_class($this));
+		$this->short_name = preg_replace('/^Stash_([a-zA-Z0-9_-]+)_pi$/i', '$1', get_class($this));
+
 		$this->site_id = $this->EE->config->item('site_id');
 	}
 

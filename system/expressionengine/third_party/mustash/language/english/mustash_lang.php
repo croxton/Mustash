@@ -165,6 +165,7 @@ $lang = array(
 'error_missing_bundle_label' 	=> 'Please enter a bundle label.',
 'error_invalid_bundle_name' 	=> 'Please enter a valid bundle name. Use only alphanumeric characters, underscores and hyphens.',
 'error_non_unique_bundle_name' 	=> 'A bundle already exists with that name. Please enter a unique bundle name.',
+'error_missing_static_config' 	=> 'Please set \'stash_static_basepath\' and \'stash_static_url\' in your config.',
 
 ''=>''
 
