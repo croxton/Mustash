@@ -1,4 +1,4 @@
-#Mustash 1.0.6
+#Mustash 1.0.8
 
 ### Description
 
