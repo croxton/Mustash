@@ -190,7 +190,7 @@ class Mustash_ext
 	 * @param      array
 	 * @return     array
 	 */
-	public function cp_menu_array(&$menu)
+	public function cp_menu_array($menu)
 	{
 		// let's see if the logged in user has permission to access the Mustash module
 		$pass = FALSE;
