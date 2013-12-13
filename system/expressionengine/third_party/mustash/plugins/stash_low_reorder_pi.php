@@ -93,7 +93,7 @@ class Stash_low_reorder_pi extends Mustash_plugin {
 		foreach($entries as $entry_id)
 		{
 			// get comment data
-			$entry = $this->EE->mustash_channel_data->get_entry($id);
+			$entry = $this->EE->mustash_channel_data->get_entry($entry_id);
 
 			// prep marker data
 			$markers = array(

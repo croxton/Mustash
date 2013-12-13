@@ -14,6 +14,7 @@
 <IfModule mod_rewrite.c>
  
 RewriteEngine on	
+RewriteBase /
 
 #################################################################################
 # START MUSTASH STATIC CACHE RULES 
@@ -24,11 +25,17 @@ RewriteEngine on
 
 # -------------------------------------------------------------------------------
 
-# Exclude POST requests
-RewriteCond %{REQUEST_METHOD} !=POST
+# Exclude image files
+RewriteCond $1 !\.(gif|jpe?g|png|ico)$ [NC]
 
-# Exclude CSS/ACT EE URLs
-RewriteCond %{QUERY_STRING} !^(css|ACT|URL)
+# We only want GET requests
+RewriteCond %{REQUEST_METHOD} GET
+
+# Exclude CSS/ACT EE URLs and 'preview'
+RewriteCond %{QUERY_STRING} !^(css|ACT|URL|preview)
+
+# Uncomment this if you want to disable static caching for logged-in users
+#RewriteCond %{HTTP_COOKIE} !exp_sessionid [NC]
 
 # Remove index.php from conditions
 RewriteCond $1 ^(index.php/)*(.*)(/*)$
@@ -49,7 +56,12 @@ RewriteRule ^(index.php/*)*(.*)(/*) <?php echo $cache_url?><?php echo $site->sit
 # See: http://ellislab.com/expressionengine/user-guide/urls/remove_index.php.html
 # -------------------------------------------------------------------------------
 
-RewriteCond $1 !\.(gif|jpe?g|png)$ [NC]
+# Removes index.php from ExpressionEngine URLs
+RewriteCond %{THE_REQUEST} ^GET.*index\.php [NC]
+RewriteCond %{REQUEST_URI} !/system/.* [NC]
+RewriteRule (.*?)index\.php/*(.*) /$1$2 [R=301,NE,L]
+
+# Directs all EE web requests through the site index file
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ /index.php/$1 [L]
