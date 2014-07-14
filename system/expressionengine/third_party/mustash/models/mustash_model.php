@@ -7,7 +7,7 @@ require_once PATH_THIRD . 'stash/models/stash_model.php';
  *
  * @package		Mustash
  * @author		Mark Croxton
- * @copyright	Copyright (c) 2013, hallmarkdesign
+ * @copyright	Copyright (c) 2014, hallmarkdesign
  * @link		http://hallmark-design.co.uk/code/mustash/
  * @since		1.0
  * @filesource 	./system/expressionengine/third_party/mustash/models/mustash_model.php
@@ -280,9 +280,10 @@ class Mustash_model extends Stash_model
 	 * @param integer/boolean $bundle_id
 	 * @param string $scope all|site|user
 	 * @param string $regex a regular expression
+	 * @param integer $invalidate delay until cached item expires (seconds)
 	 * @return boolean
 	 */
-	function clear_matching_variables($bundle_id = FALSE, $scope = NULL, $regex = NULL)
+	function clear_matching_variables($bundle_id = FALSE, $scope = NULL, $regex = NULL, $invalidate = 0)
 	{
 		$session_id = NULL;
 
@@ -293,7 +294,7 @@ class Mustash_model extends Stash_model
 				$session_id = $scope;
 			}
 		}
-		return $this->delete_matching_keys($bundle_id, $session_id, $this->site_id, $regex);
+		return $this->delete_matching_keys($bundle_id, $session_id, $this->site_id, $regex, $invalidate);
 	}
 
 

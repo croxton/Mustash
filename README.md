@@ -1,4 +1,4 @@
-#Mustash 1.0.9
+#Mustash 1.1.0
 
 ### Description
 
@@ -21,4 +21,4 @@ Mustash is an ExpressionEngine control panel module for managing cached [Stash](
 4. In the CP, navigate to Add-ons > Modules and click the 'Install' link for the Mustash module
 
 
-Copyright (c) 2013 Hallmark Design http://hallmark-design.co.uk
+Copyright (c) 2014 Hallmark Design http://hallmark-design.co.uk

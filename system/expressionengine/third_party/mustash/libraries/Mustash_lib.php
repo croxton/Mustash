@@ -7,7 +7,7 @@
  *
  * @package		Mustash
  * @author		Mark Croxton
- * @copyright	Copyright (c) 2013, hallmarkdesign
+ * @copyright	Copyright (c) 2014, hallmarkdesign
  * @link		http://hallmark-design.co.uk/code/mustash
  * @since		1.0
  * @filesource 	./system/expressionengine/third_party/mustash/Mustash_lib.php
@@ -338,7 +338,35 @@ class Mustash_lib
 		}
 	}
 
+	/**
+	 * Prune cache every 15 seconds up to 4 times
+	 * Designed to work with a cronbtab called every minute
+	 *
+	 * @access     public
+	 * @return     boolean
+	 */
+	public function prune() 
+	{
+		// unlock file-based sessions to allow other requests to continue
+		session_write_close();
 
+		// make sure we have long enough to do this
+		set_time_limit(60);
+
+		$count = 3;
+		while($count >= 0) {
+			--$count;
+			if ($this->EE->mustash_model->prune_keys())
+			{
+				sleep(15);
+			}
+			else
+			{
+				return FALSE;
+			}
+		}
+		return TRUE;
+	}
 
 	/**
 	 * Check that the logged in user has permission to access 
@@ -404,9 +432,9 @@ class Mustash_lib
 		return $this->EE->mustash_model->clear_variables($ids);
 	}
 
-	public function clear_matching_variables($bundle_id = FALSE, $scope = NULL, $regex = NULL)
+	public function clear_matching_variables($bundle_id = FALSE, $scope = NULL, $regex = NULL, $invalidate = 0)
 	{
-		return $this->EE->mustash_model->clear_matching_variables($bundle_id, $scope, $regex);
+		return $this->EE->mustash_model->clear_matching_variables($bundle_id, $scope, $regex, $invalidate);
 	}
 
 	public function get_bundle($id)

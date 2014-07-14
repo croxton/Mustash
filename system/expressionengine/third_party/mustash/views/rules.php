@@ -38,6 +38,7 @@
                         <option value="NULL">-- Please select --</option>
 
                         <?php foreach($plugins as $p): ?>
+                        <?php if (count($p->get_hooks()) > 0) : ?>    
 
                         <optgroup label="<?php echo $p->name?>">
                         <?php foreach($p->get_hooks() as $hook => $markers): ?>
@@ -45,8 +46,9 @@
                             <option value="<?php echo $p->short_name."--".$hook?>"<?php echo( ($rule['hook'] == $hook &&  $rule['plugin'] == $p->short_name) ? ' selected="selected"' : '');?>><?php echo stash_translate_hook_name($hook, $p->name)?></option>
                         <?php endforeach; ?>
                         </optgroup> 
-                        <?php endforeach; ?>
 
+                        <?php endif; ?>
+                        <?php endforeach; ?>
                     </select>
                 </td>
                 <td>

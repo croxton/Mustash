@@ -29,7 +29,7 @@ class Stash_varnish_pi extends Mustash_plugin {
 	 * @var 	string
 	 * @access 	public
 	 */
-	public $version = '1.0.0';
+	public $version = '1.0.1';
 
 	/**
 	 * Extension hook priority
@@ -58,12 +58,20 @@ class Stash_varnish_pi extends Mustash_plugin {
 	protected $port = 80;
 
 	/**
-	 * Varnish header
+	 * Varnish header to trigger BAN of the entire cache for a domain
 	 *
 	 * @var 	array
 	 * @access 	protected
 	 */
-	protected $header = 'EE_PURGE';
+	protected $header_domain = 'EE_PURGE';
+
+	/**
+	 * Varnish header to trigger BAN of an exact URL
+	 *
+	 * @var 	array
+	 * @access 	protected
+	 */
+	protected $header_url = 'EE_PURGE_URL';
 
 	/**
 	 * Constructor
@@ -75,8 +83,9 @@ class Stash_varnish_pi extends Mustash_plugin {
 		parent::__construct();	
 
 		// allow options to be overriden by config values
-		$this->port 	= $this->EE->config->item('varnish_port')   ? $this->EE->config->item('varnish_port')   : $this->port;
-		$this->header 	= $this->EE->config->item('varnish_header') ? $this->EE->config->item('varnish_header') : $this->header;
+		$this->port 			= $this->EE->config->item('varnish_port')   		? $this->EE->config->item('varnish_port')   : $this->port;
+		$this->header_domain 	= $this->EE->config->item('varnish_header_domain') 	? $this->EE->config->item('varnish_header_domain') : $this->header_domain;
+		$this->header_url 		= $this->EE->config->item('varnish_header_url') 	? $this->EE->config->item('varnish_header_url') : $this->header_url;
 	}	
 
 	/**
@@ -158,13 +167,21 @@ class Stash_varnish_pi extends Mustash_plugin {
 			$protocol 	= (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") ? "https://" : "http://";
 			$purge_url 	= $protocol . $_SERVER['HTTP_HOST'] . $uri;
 
-			// send a special header to Varnish that should be intercepted by the conditions in vcl_recv
+			// are we clearing the whole cache or just a URL?
+			$purge_header = $uri == '/' ? $this->header_domain : $this->header_url;
+
+			#echo 'uri=' . $uri ;
+			#echo 'purge_url=' . $purge_url ;
+			#die();
+
+			// Send a header that will be intercepted by the conditions in vcl_recv
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_URL, $purge_url);
 			curl_setopt($ch, CURLOPT_PORT , (int)$this->port);
-			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $this->header);
+			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $purge_header);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			curl_exec($ch);
+
 		}
 		
 	}

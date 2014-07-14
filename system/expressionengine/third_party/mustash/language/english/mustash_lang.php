@@ -58,13 +58,16 @@ $lang = array(
 'api_key' 						=> 'API key',
 'api_key_help'					=> 'Enter an API key if you wish to trigger rules using the API URL. It should be a random string up to 32 characters long.',
 	
-'api_hooks' 	 				=> 'API custom hooks',
+'api_hooks' 	 				=> 'API hooks',
 'api_hooks_help' 				=> 'Enter a list of custom hooks you wish to trigger via the API URL. E.g. \'post_deploy\'. 
 									You must enter at least one hook and create at least one associated rule in order to use the API. 
 									Use only alphanumeric characters, underscores and hyphens.',
 
-'api_url' 	 					=> 'API URL',
-'api_url_help'		 			=> 'The URL used to access the API.',
+'api_url' 	 					=> 'API URL - hooks',
+'api_url_help'		 			=> 'The URL used to trigger custom hooks.',
+
+'api_url_prune' 	 			=> 'API URL - pruning',
+'api_url_prune_help'		 	=> 'The URL used to trigger cache pruning.',
 
 'can_manage_settings'	 		=> 'Can manage settings',
 'can_manage_settings_help' 		=> 'Select member groups allowed to manage settings.',
@@ -100,6 +103,8 @@ $lang = array(
 'delete_variables' 				=> 'Clear cache',
 'edit_variable' 				=> 'Edit variable',
 'delete_confirm' 				=> 'Delete confirm',
+'clear_mode'					=> 'What would you like to clear?', 
+'clear_options'					=> 'Options', 
 'clear_cache' 					=> 'Clear cached variables',
 'delete_confirm_message' 		=> 'The following cached variables will be deleted:',
 	
@@ -108,9 +113,12 @@ $lang = array(
 'filter_by_bundle' 				=> 'Filter by bundle',
 
 // clear cache - radio buttons
+'clear' 						=> 'Clear',
 'clear_all_vars' 				=> 'Clear ALL variables',
 'clear_site_vars' 				=> 'Clear site-scoped variables',
 'clear_user_vars' 				=> 'Clear user-scoped variables',
+'clear_soft' 					=> 'Soft delete (recommended)',
+'clear_soft_help' 				=> 'Instead of clearing the cache immediately, it will clear gradually over the period of time specified. <br>This can reduce load on the webserver and is recommended for busy sites.',
 
 // Rules
 'rules' 						=> 'Stash cache-breaking rules',

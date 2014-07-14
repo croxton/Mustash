@@ -7,7 +7,7 @@ require_once PATH_THIRD . 'mustash/config.php';
  *
  * @package		Mustash
  * @author		Mark Croxton
- * @copyright	Copyright (c) 2013, hallmarkdesign
+ * @copyright	Copyright (c) 2014, hallmarkdesign
  * @link		http://hallmark-design.co.uk/code/mustash
  * @since		1.0
  * @filesource 	./system/expressionengine/third_party/mustash/mcp.mustash.php
@@ -245,8 +245,13 @@ class mustash_mcp {
 		$this->_set_variable('cp_page_title', $this->EE->lang->line('clear_cache'));
 		$this->EE->cp->set_right_nav($this->EE->mustash_lib->variables_right_menu());
 
+		$vars = array();
+
+		// soft delete period?
+		$vars['invalidate'] = $this->EE->config->item('stash_invalidation_period') ? $this->EE->config->item('stash_invalidation_period') : 300;
+
 		// render the view
-		return $this->_load_view('clear_cache_confirm');	
+		return $this->_load_view('clear_cache_confirm', $vars);	
 	}
 
 	public function clear_cache()
@@ -257,13 +262,25 @@ class mustash_mcp {
 		// get selected bundle
 		$bundle_id = $this->EE->input->get_post('bundle_id');
 
+		// soft delete?
+		$invalidate = 0;
+		if ($this->EE->input->get_post('soft_delete'))
+		{
+			$value = $this->EE->input->get_post('invalidate');
+
+			if (is_numeric($value) && $value > 0 && $value == round($value))
+			{
+				$invalidate = $value;
+			}
+		}
+
 		if( ! $scope && ! $bundle_id)
 		{
 			$this->EE->functions->redirect($this->url_base.'variables');
 			exit;
 		}
 
-		if ( $this->EE->mustash_lib->clear_matching_variables($bundle_id, $scope))
+		if ( $this->EE->mustash_lib->clear_matching_variables($bundle_id, $scope, NULL, $invalidate))
 		{
 			$this->EE->logger->log_action($this->EE->lang->line('log_clear_cache'));
 			$this->EE->session->set_flashdata('message_success', $this->EE->lang->line('clear_success'));
@@ -746,7 +763,13 @@ class mustash_mcp {
 						  .'?ACT='
 						  .$this->EE->cp->fetch_action_id('Mustash', 'api')
 						  .'&key='.$vars['api_key']
-						  .'&hook=';
+						  .'&hook=[your hook here]';
+
+		$vars['api_url_prune'] = $this->EE->config->config['site_url']
+						  .'?ACT='
+						  .$this->EE->cp->fetch_action_id('Mustash', 'api')
+						  .'&key='.$vars['api_key']
+						  .'&prune=1';
 
 		// --------------------------------------------------------
 		//  Get member groups, excluding superadmin, guests, pending and banned

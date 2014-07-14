@@ -7,7 +7,7 @@ require_once PATH_THIRD . 'mustash/config.php';
  *
  * @package		Mustash
  * @author		Mark Croxton
- * @copyright	Copyright (c) 2013, hallmarkdesign
+ * @copyright	Copyright (c) 2014, hallmarkdesign
  * @link		http://hallmark-design.co.uk/code/mustash
  * @since		1.0
  * @filesource 	./system/expressionengine/third_party/mustash/ext.mustash.php

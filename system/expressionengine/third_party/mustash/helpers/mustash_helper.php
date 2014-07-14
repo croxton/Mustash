@@ -5,7 +5,7 @@
  *
  * @package		Mustash
  * @author		Mark Croxton
- * @copyright	Copyright (c) 2013, hallmarkdesign
+ * @copyright	Copyright (c) 2014, hallmarkdesign
  * @link		http://hallmark-design.co.uk/code/mustash
  * @since		1.0
  * @filesource 	./system/expressionengine/third_party/mustash/helpers/mustash_helper.php
@@ -22,7 +22,9 @@ if ( ! function_exists('stash_convert_timestamp'))
 		}
 		if ($date)
 		{
-			$date = mdate($format, $date);	
+			#$date = mdate($format, $date);	
+			// localize displayed date to user's timezone
+			$date = $EE->localize->format_date($format, $date);
 		}
 		else
 		{

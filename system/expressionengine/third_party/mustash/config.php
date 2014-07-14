@@ -5,7 +5,7 @@
  *
  * @package		Mustash
  * @author		Mark Croxton
- * @copyright	Copyright (c) 2013, hallmarkdesign
+ * @copyright	Copyright (c) 2014, hallmarkdesign
  * @link		http://hallmark-design.co.uk/code/mustash
  * @since		1.0
  * @filesource 	./system/expressionengine/third_party/mustash/config.php
@@ -15,7 +15,7 @@ if ( ! defined('MUSTASH_NAME'))
 {
 	define('MUSTASH_NAME',         	'Mustash');
 	define('MUSTASH_CLASS_NAME',   	'Mustash');
-	define('MUSTASH_VERSION',      	'1.0.9');
+	define('MUSTASH_VERSION',      	'1.1.0');
 	define('MUSTASH_DOCS_URL',     	'https://github.com/croxton/Stash/wiki');
 	define('MUSTASH_DESC',  		'Manage Stash variables and cache-breaking rules.');
 	define('MUSTASH_MOD_URL',  		strtolower(MUSTASH_CLASS_NAME));

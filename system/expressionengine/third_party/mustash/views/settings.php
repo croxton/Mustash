@@ -139,6 +139,16 @@
 
 			<tr class="<?php echo stash_zebra()?>">
 				<td style="vertical-align:top">
+					<strong class="stash_label"><?php echo lang('api_url_prune')?></strong>
+					<div class="stash_notes"><?php echo lang('api_url_prune_help')?></div>
+				</td>
+				<td>
+					<?php echo $api_url_prune ?> 
+				</td>
+			</tr>
+
+			<tr class="<?php echo stash_zebra()?>">
+				<td style="vertical-align:top">
 					<strong class="stash_label"><?php echo lang('list_limit')?></strong>
 					<div class="stash_notes"><?php echo lang('list_limit_help')?></div>
 				</td>

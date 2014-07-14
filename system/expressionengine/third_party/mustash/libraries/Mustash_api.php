@@ -5,7 +5,7 @@
  *
  * @package		Mustash
  * @author		Mark Croxton
- * @copyright	Copyright (c) 2013, hallmarkdesign
+ * @copyright	Copyright (c) 2014, hallmarkdesign
  * @link		http://hallmark-design.co.uk/code/mustash
  * @since		1.0
  * @filesource 	./system/expressionengine/third_party/mustash/Mustash_api.php
@@ -14,7 +14,8 @@
 class Mustash_api {
 
 	public $settings;
-	public $hook;
+	public $hook = FALSE;
+	public $prune = FALSE;
 	public $plugin = 'stash_api_pi';
 	
 	public function __construct()
@@ -30,16 +31,31 @@ class Mustash_api {
 
 	public function run()
 	{
-		// load and instantiate the plugin
-		$plugin = $this->EE->mustash_lib->plugin($this->plugin);
-
-		if ($plugin->run($this->hook))
+		if ($this->prune)
 		{
-			$this->response('api_success', 200);
+			if ($this->EE->mustash_lib->prune())
+			{
+				// pruning will take 45 seconds to complete
+				$this->response('api_success', 200);
+			}
+			else
+			{
+				$this->response('api_fail', 500);
+			}
 		}
 		else
 		{
-			$this->response('api_fail', 500);
+			// load and instantiate the plugin
+			$plugin = $this->EE->mustash_lib->plugin($this->plugin);
+
+			if ($plugin->run($this->hook))
+			{
+				$this->response('api_success', 200);
+			}
+			else
+			{
+				$this->response('api_fail', 500);
+			}
 		}
 	}
 
@@ -60,11 +76,14 @@ class Mustash_api {
 			$this->response('api_bad_key', 403);
 			exit;			
 		}
+
+		// Prune cache?
+		$this->prune = $this->EE->input->get_post('prune');
 		
 		// Requested hook?
 		$this->hook = $this->EE->input->get_post('hook');
 
-		if( ! $this->hook || empty($this->hook) || ! in_array($this->hook, explode(',', $this->settings['api_hooks'])) )
+		if( ! $this->prune && (! $this->hook || empty($this->hook) || ! in_array($this->hook, explode(',', $this->settings['api_hooks']))) )
 		{
 			$this->response('api_bad_method', 400);
 			exit;				
