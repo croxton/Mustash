@@ -339,33 +339,14 @@ class Mustash_lib
 	}
 
 	/**
-	 * Prune cache every 15 seconds up to 4 times
-	 * Designed to work with a cronbtab called every minute
+	 * Prune cache - called by cronbtab
 	 *
 	 * @access     public
 	 * @return     boolean
 	 */
 	public function prune() 
 	{
-		// unlock file-based sessions to allow other requests to continue
-		session_write_close();
-
-		// make sure we have long enough to do this
-		set_time_limit(60);
-
-		$count = 3;
-		while($count >= 0) {
-			--$count;
-			if ($this->EE->mustash_model->prune_keys())
-			{
-				sleep(15);
-			}
-			else
-			{
-				return FALSE;
-			}
-		}
-		return TRUE;
+		return $this->EE->mustash_model->prune_keys();
 	}
 
 	/**
