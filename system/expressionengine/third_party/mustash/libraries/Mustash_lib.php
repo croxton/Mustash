@@ -698,12 +698,16 @@ abstract class Mustash_plugin {
 			}
 		}
 
+		// stagger the invalidation of matching variables over a specific time period?
+		$invalidation_period  = $this->EE->config->item('stash_invalidation_period') ? $this->EE->config->item('stash_invalidation_period') : 0; // seconds
+
 		// add the current site id and pass througb to stash model
 		return $this->EE->stash_model->delete_matching_keys(
 			$bundle_id, 
 			$session_id, 
 			is_null($site_id) ? $this->EE->config->item('site_id') : $site_id, 
-			$regex
+			$regex,
+			$invalidation_period
 		);
 	}
 
