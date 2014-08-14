@@ -280,14 +280,33 @@ class mustash_mcp {
 			exit;
 		}
 
-		if ( $this->EE->mustash_lib->clear_matching_variables($bundle_id, $scope, NULL, $invalidate))
+		// do we want to flush the entire cache, immediately?
+		if ($scope == 'all' && ! $bundle_id && $invalidate == 0)
 		{
-			$this->EE->logger->log_action($this->EE->lang->line('log_clear_cache'));
-			$this->EE->session->set_flashdata('message_success', $this->EE->lang->line('clear_success'));
+			// yes, we'll delete everything for this site
+			if ( $this->EE->mustash_lib->flush_cache($this->EE->config->item('site_id')))
+			{
+				$this->EE->logger->log_action($this->EE->lang->line('log_clear_cache'));
+				$this->EE->session->set_flashdata('message_success', $this->EE->lang->line('clear_success'));
+			}
+			else
+			{
+				$this->EE->session->set_flashdata('message_failure', $this->EE->lang->line('clear_fail'));
+			}
+
 		}
 		else
 		{
-			$this->EE->session->set_flashdata('message_failure', $this->EE->lang->line('clear_fail'));
+			// no, we'll clear the cached items individually
+			if ( $this->EE->mustash_lib->clear_matching_variables($bundle_id, $scope, NULL, $invalidate))
+			{
+				$this->EE->logger->log_action($this->EE->lang->line('log_clear_cache'));
+				$this->EE->session->set_flashdata('message_success', $this->EE->lang->line('clear_success'));
+			}
+			else
+			{
+				$this->EE->session->set_flashdata('message_failure', $this->EE->lang->line('clear_fail'));
+			}
 		}
 
 		// after cache has cleared, redraw the variables screen with appropriate filters selected

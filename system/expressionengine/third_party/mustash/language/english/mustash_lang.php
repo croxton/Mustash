@@ -162,6 +162,7 @@ $lang = array(
 
 // API
 'api_success' 					=> 'Success',
+'api_no_prune' 					=> 'Nothing to prune',
 'api_fail' 						=> 'Internal server error',
 'api_disabled'					=> 'API disabled',
 'api_bad_key' 					=> 'Forbidden',

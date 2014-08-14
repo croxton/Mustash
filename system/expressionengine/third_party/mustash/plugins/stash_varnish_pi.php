@@ -29,7 +29,7 @@ class Stash_varnish_pi extends Mustash_plugin {
 	 * @var 	string
 	 * @access 	public
 	 */
-	public $version = '1.0.1';
+	public $version = '1.0.2';
 
 	/**
 	 * Extension hook priority
@@ -46,13 +46,14 @@ class Stash_varnish_pi extends Mustash_plugin {
 	 * @access 	protected
 	 */
 	protected $hooks = array(
-		'stash_delete'
+		'stash_delete',
+		'stash_flush_cache'
 	);
 
 	/**
 	 * Varnish port
 	 *
-	 * @var 	array
+	 * @var 	integer
 	 * @access 	protected
 	 */
 	protected $port = 80;
@@ -60,7 +61,7 @@ class Stash_varnish_pi extends Mustash_plugin {
 	/**
 	 * Varnish header to trigger BAN of the entire cache for a domain
 	 *
-	 * @var 	array
+	 * @var 	string
 	 * @access 	protected
 	 */
 	protected $header_domain = 'EE_PURGE';
@@ -68,10 +69,18 @@ class Stash_varnish_pi extends Mustash_plugin {
 	/**
 	 * Varnish header to trigger BAN of an exact URL
 	 *
-	 * @var 	array
+	 * @var 	string
 	 * @access 	protected
 	 */
 	protected $header_url = 'EE_PURGE_URL';
+
+	/**
+	 * Hostname
+	 *
+	 * @var 	string
+	 * @access 	protected
+	 */
+	protected $site_url = '';
 
 	/**
 	 * Constructor
@@ -86,6 +95,9 @@ class Stash_varnish_pi extends Mustash_plugin {
 		$this->port 			= $this->EE->config->item('varnish_port')   		? $this->EE->config->item('varnish_port')   : $this->port;
 		$this->header_domain 	= $this->EE->config->item('varnish_header_domain') 	? $this->EE->config->item('varnish_header_domain') : $this->header_domain;
 		$this->header_url 		= $this->EE->config->item('varnish_header_url') 	? $this->EE->config->item('varnish_header_url') : $this->header_url;
+
+		$protocol 				= (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") ? "https://" : "http://";
+		$this->site_url 		= $protocol . $_SERVER['HTTP_HOST'];
 	}	
 
 	/**
@@ -107,6 +119,8 @@ class Stash_varnish_pi extends Mustash_plugin {
 
 	/**
 	 * Hook: stash_delete
+	 * 
+	 * Triggered for each individual variable that is deleted from the cache
 	 *
 	 * @access	public
 	 * @param	array
@@ -149,8 +163,7 @@ class Stash_varnish_pi extends Mustash_plugin {
 			}
 
 			// OK, let's go ahead and try to purge the URI from Varnish
-
-			$uri = '/'; // clear whole cache by default
+			$uri = ''; 
 
 			// check if we're purging an individual full page
 			// => cached items using the @URI pointer are most likely to represent cached pages
@@ -164,26 +177,48 @@ class Stash_varnish_pi extends Mustash_plugin {
 			}
 
 			// construct the full URL to the page
-			$protocol 	= (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") ? "https://" : "http://";
-			$purge_url 	= $protocol . $_SERVER['HTTP_HOST'] . $uri;
+			$purge_url 	= $this->site_url . $uri;
 
 			// are we clearing the whole cache or just a URL?
-			$purge_header = $uri == '/' ? $this->header_domain : $this->header_url;
-
-			#echo 'uri=' . $uri ;
-			#echo 'purge_url=' . $purge_url ;
-			#die();
+			#$purge_header = $uri == '/' ? $this->header_domain : $this->header_url;
 
 			// Send a header that will be intercepted by the conditions in vcl_recv
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_URL, $purge_url);
 			curl_setopt($ch, CURLOPT_PORT , (int)$this->port);
-			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $purge_header);
+			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $this->header_url);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			curl_exec($ch);
+		}	
+	}
 
+	/**
+	 * Hook: stash_flush_cache
+	 *
+	 * Triggered when the entire cache is deleted immediately
+	 *
+	 * @access	public
+	 * @param	array
+	 * @return	void
+	 */
+	public function stash_flush_cache($site_id)
+	{
+		// get rules for this plugin/hook 
+		if ($rules = $this->get_rules(__FUNCTION__))
+		{
+			// we don't need to parse the rules since we're deleting everything
+
+			// just need to pass the site url with a traling slash to match the rule in vcl_recv
+			$purge_url 	= $this->site_url . '/';
+
+			// Send a header that will be intercepted by the conditions in vcl_recv
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $purge_url);
+			curl_setopt($ch, CURLOPT_PORT , (int)$this->port);
+			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $this->header_domain);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_exec($ch);
 		}
-		
 	}
 
 }

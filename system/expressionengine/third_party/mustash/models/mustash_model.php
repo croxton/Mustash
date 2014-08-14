@@ -262,13 +262,13 @@ class Mustash_model extends Stash_model
 	function clear_variables($ids)
 	{
 		// hydrate the vars before we kill them so that we can delete any corresponding static cache files
-		$query = $this->db->select('id, key_name, key_label, bundle_id, session_id')
+		$query = $this->db->select('id, site_id, key_name, key_label, session_id, bundle_id')
 						  ->where_in('id', $ids)
 						  ->get('stash');
 
 		if ($query->num_rows() > 0)
 		{
-			return $this->delete_cache($query->result(), $this->site_id);
+			return $this->delete_cache($query->result());
 		}
 
 		return FALSE;			  

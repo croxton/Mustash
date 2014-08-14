@@ -48,6 +48,14 @@ class Mustash_ext
 	 * @access     private
 	 */
 	private $hooks = array('cp_menu_array');
+
+	/**
+	 * Plugin hooks
+	 *
+	 * @var        array
+	 * @access     private
+	 */
+	private static $plugin_hooks = array();
 		
 	/**
 	 * Constructor
@@ -62,6 +70,26 @@ class Mustash_ext
 		#$this->EE->load->library('mustash_lib');
 		$this->EE->lang->loadfile('mustash');
 		$this->query_base = 'C=addons_modules'.AMP.'M=show_module_cp'.AMP.'module='.$this->mod_name.AMP.'method=';
+
+		// populate static plugin hooks array on first instantiation of this class
+		if ( empty(self::$plugin_hooks))
+		{
+			$query = $this->EE->db->from('extensions')
+								  ->where('class', $this->ext_class_name)
+								  ->where('enabled', 'y')
+								  ->order_by('priority', 'asc')
+								  ->get();
+
+			if ($query->num_rows() > 0)
+			{
+				$result = $query->result_array();
+
+				foreach($result as $row)
+				{
+					self::$plugin_hooks[$row['hook']][] = $row['method'];
+				}
+			}
+		}
 	}
 
 	/**
@@ -76,17 +104,28 @@ class Mustash_ext
 		{
 			$this->EE->load->library('mustash_lib');
 
-			// parse out the plugin class and method
+			// parse out the plugin method from the called extension
 			$plugin = explode(':', $name);
-			$plugin_class = "stash_" . $plugin[0] . "_pi";
 			$plugin_method =  $plugin[1];
 
-			// load and instantiate the plugin
-			$plugin_instance = $this->EE->mustash_lib->plugin($plugin_class);	
+			// EE will only call the first instance of a hook for a given class,
+			// but in some cases there can be more than one plugin using a hook.
+			// Therefore we need to manually call all plugins that use the same hook.
+			if (isset(self::$plugin_hooks[$plugin_method]))
+			{
+				foreach(self::$plugin_hooks[$plugin_method] as $p)
+				{
+					$plugin = explode(':', $p);
+					$plugin_class = "stash_" . $plugin[0] . "_pi";
 
-			// invoke the plugin method, using Reflection to preserve $this
-			$method = new ReflectionMethod($plugin_class, $plugin_method);
-			return $method->invokeArgs($plugin_instance, $arguments);
+					// load and instantiate the plugin
+					$plugin_instance = $this->EE->mustash_lib->plugin($plugin_class);	
+
+					// invoke the plugin method, using Reflection to preserve $this
+					$method = new ReflectionMethod($plugin_class, $plugin_method);
+					$method->invokeArgs($plugin_instance, $arguments);
+				}
+			}
 		}
 	}
 

@@ -418,6 +418,11 @@ class Mustash_lib
 		return $this->EE->mustash_model->clear_matching_variables($bundle_id, $scope, $regex, $invalidate);
 	}
 
+	public function flush_cache($site_id = 1)
+	{
+		return $this->EE->mustash_model->flush_cache($site_id);
+	}
+
 	public function get_bundle($id)
 	{
 		return $this->EE->mustash_model->get_bundle($id);

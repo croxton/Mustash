@@ -35,12 +35,11 @@ class Mustash_api {
 		{
 			if ($this->EE->mustash_lib->prune())
 			{
-				// pruning will take 45 seconds to complete
 				$this->response('api_success', 200);
 			}
 			else
 			{
-				$this->response('api_fail', 500);
+				$this->response('api_no_prune', 200);
 			}
 		}
 		else
