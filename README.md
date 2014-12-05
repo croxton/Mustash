@@ -1,4 +1,4 @@
-#Mustash 1.1.1
+#Mustash 1.1.2
 
 ### Description
 
