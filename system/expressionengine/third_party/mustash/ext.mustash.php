@@ -231,6 +231,12 @@ class Mustash_ext
 	 */
 	public function cp_menu_array($menu)
 	{
+        // get the latest version of $menu if it's been altered by other extensions on this hook
+        if (isset($this->EE->extensions->last_call) && $this->EE->extensions->last_call)
+        {
+            $menu = $this->EE->extensions->last_call;
+        } 
+
 		// let's see if the logged in user has permission to access the Mustash module
 		$pass = FALSE;
 
