@@ -166,7 +166,7 @@ class Stash_member_model_pi extends Mustash_plugin {
 	 *
 	 * @access	public
 	 * @param	array
-	 * @return	void
+	 * @return	array
 	 */
 	public function member_delete($member_ids)
 	{
@@ -204,8 +204,7 @@ class Stash_member_model_pi extends Mustash_plugin {
 	 * Get a list of member groups that can access the control panel
 	 *
 	 * @access	private
-	 * @param	array
-	 * @return	void
+	 * @return	array
 	 */
 	private function _get_cp_member_groups()
 	{

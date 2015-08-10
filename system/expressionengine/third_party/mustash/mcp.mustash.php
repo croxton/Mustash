@@ -661,14 +661,13 @@ class mustash_mcp {
 						$rules[] = array(
 							'plugin' 	=> $trigger[0],
 							'hook' 	 	=> $trigger[1],
-							'group_id'	=> $group[$index],
-							'bundle_id'	=> $bundle[$index],
-							'scope'		=> $scope[$index],
+							'group_id' 	=> ($group[$index]  == "NULL" ? NULL : $group[$index]),
+							'bundle_id' => ($bundle[$index] == "NULL" ? NULL : $bundle[$index]), 
+							'scope'  	=> ($scope[$index]  == "NULL" ? NULL : $scope[$index]), 
 							'pattern'	=> $pattern[$index],
 							'ord'		=> $index
 						);
 					}
-		
 				}
 			}
 

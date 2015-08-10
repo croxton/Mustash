@@ -117,8 +117,8 @@ $lang = array(
 'clear_all_vars' 				=> 'Clear ALL variables',
 'clear_site_vars' 				=> 'Clear site-scoped variables',
 'clear_user_vars' 				=> 'Clear user-scoped variables',
-'clear_soft' 					=> 'Soft delete (recommended)',
-'clear_soft_help' 				=> 'Instead of clearing the cache immediately, it will clear gradually over the period of time specified. <br>This can reduce load on the webserver and is recommended for busy sites.',
+'clear_soft' 					=> 'Soft delete',
+'clear_soft_help' 				=> 'Instead of clearing the cache immediately, clear it gradually over the period of time specified.',
 
 // Rules
 'rules' 						=> 'Stash cache-breaking rules',

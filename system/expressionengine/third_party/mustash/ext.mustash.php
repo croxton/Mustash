@@ -123,7 +123,7 @@ class Mustash_ext
 
 					// invoke the plugin method, using Reflection to preserve $this
 					$method = new ReflectionMethod($plugin_class, $plugin_method);
-					$method->invokeArgs($plugin_instance, $arguments);
+					return $method->invokeArgs($plugin_instance, $arguments);
 				}
 			}
 		}
