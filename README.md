@@ -1,4 +1,6 @@
-#Mustash 1.1.3
+#Mustash 2.0.0 
+
+Mustash for ExpressionEngine 3.0+.
 
 ### Description
 
