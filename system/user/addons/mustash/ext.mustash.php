@@ -10,7 +10,7 @@ require_once PATH_THIRD . 'mustash/config.php';
  * @copyright	Copyright (c) 2014, hallmarkdesign
  * @link		http://hallmark-design.co.uk/code/mustash
  * @since		1.0
- * @filesource 	./system/expressionengine/third_party/mustash/ext.mustash.php
+ * @filesource 	./system/user/addons/mustash/ext.mustash.php
  */
 class Mustash_ext 
 {
@@ -64,17 +64,15 @@ class Mustash_ext
 	 */
 	public function __construct($settings = array())
 	{
-		$this->EE =& get_instance();
-
 		$this->ext_class_name = MUSTASH_CLASS_NAME . '_ext';
-		#$this->EE->load->library('mustash_lib');
-		$this->EE->lang->loadfile('mustash');
+		#ee()->load->library('mustash_lib');
+		ee()->lang->loadfile('mustash');
 		$this->query_base = 'C=addons_modules'.AMP.'M=show_module_cp'.AMP.'module='.$this->mod_name.AMP.'method=';
 
 		// populate static plugin hooks array on first instantiation of this class
 		if ( empty(self::$plugin_hooks))
 		{
-			$query = $this->EE->db->from('extensions')
+			$query = ee()->db->from('extensions')
 								  ->where('class', $this->ext_class_name)
 								  ->where('enabled', 'y')
 								  ->order_by('priority', 'asc')
@@ -102,7 +100,7 @@ class Mustash_ext
 	{
 		if (strpos($name, ':') !== FALSE)
 		{
-			$this->EE->load->library('mustash_lib');
+			ee()->load->library('mustash_lib');
 
 			// parse out the plugin method from the called extension
 			$plugin = explode(':', $name);
@@ -119,7 +117,7 @@ class Mustash_ext
 					$plugin_class = "stash_" . $plugin[0] . "_pi";
 
 					// load and instantiate the plugin
-					$plugin_instance = $this->EE->mustash_lib->plugin($plugin_class);	
+					$plugin_instance = ee()->mustash_lib->plugin($plugin_class);	
 
 					// invoke the plugin method, using Reflection to preserve $this
 					$method = new ReflectionMethod($plugin_class, $plugin_method);
@@ -153,8 +151,8 @@ class Mustash_ext
 	 */
 	public function disable_extension()
 	{
-		$this->EE->db->where('class', __CLASS__);
-		$this->EE->db->delete('extensions');
+		ee()->db->where('class', __CLASS__);
+		ee()->db->delete('extensions');
 	}
 
 	// ------------------------------------------------------
@@ -168,7 +166,7 @@ class Mustash_ext
 	 */
 	private function _add_hook($name)
 	{
-		$this->EE->db->insert('extensions',
+		ee()->db->insert('extensions',
 			array(
 				'class'    => __CLASS__,
 				'method'   => $name,
@@ -197,8 +195,8 @@ class Mustash_ext
 		}
 
 		// update table row with current version
-		$this->EE->db->where('class', __CLASS__);
-		$this->EE->db->update('extensions', array('version' => $this->version));
+		ee()->db->where('class', __CLASS__);
+		ee()->db->update('extensions', array('version' => $this->version));
 	}
 	
 
@@ -215,7 +213,7 @@ class Mustash_ext
 	 */
 	public function settings_form()
 	{
-		$this->EE->functions->redirect(BASE.AMP.$this->query_base.'settings');
+		ee()->functions->redirect(BASE.AMP.$this->query_base.'settings');
 	}
 
 	// ------------------------------------------------------
@@ -232,23 +230,23 @@ class Mustash_ext
 	public function cp_menu_array($menu)
 	{
         // get the latest version of $menu if it's been altered by other extensions on this hook
-        if (isset($this->EE->extensions->last_call) && $this->EE->extensions->last_call)
+        if (isset(ee()->extensions->last_call) && ee()->extensions->last_call)
         {
-            $menu = $this->EE->extensions->last_call;
+            $menu = ee()->extensions->last_call;
         } 
 
 		// let's see if the logged in user has permission to access the Mustash module
 		$pass = FALSE;
 
-		if ($this->EE->session->userdata('group_id') == 1) 
+		if (ee()->session->userdata('group_id') == 1) 
 		{
 			$pass = TRUE; // Superadmin
 		} 
 		else
 		{
-			if ($allowed_modules = array_keys($this->EE->session->userdata('assigned_modules')))
+			if ($allowed_modules = array_keys(ee()->session->userdata('assigned_modules')))
 			{
-				$query = $this->EE->db->select('module_name')
+				$query = ee()->db->select('module_name')
 							 		  ->where_in('module_id', $allowed_modules)
 							 		  ->get('modules');
 
@@ -268,7 +266,7 @@ class Mustash_ext
 
 		if ($pass)
 		{
-			$this->EE->load->library('mustash_lib');
+			ee()->load->library('mustash_lib');
 
 			$mcp_uri = BASE.AMP.'C=addons_modules'.AMP.'M=show_module_cp'.AMP.'module=mustash'.AMP.'method=';
 
@@ -281,7 +279,7 @@ class Mustash_ext
 			// only show those areas the member group has been granted access to
 			foreach ($areas as $area)
 			{
-				if ( $this->EE->mustash_lib->can_access($area))
+				if ( ee()->mustash_lib->can_access($area))
 				{
 					$stash_menu += array(
 						'stash_'.$area => $mcp_uri.$area

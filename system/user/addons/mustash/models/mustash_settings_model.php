@@ -8,10 +8,10 @@
  * @copyright	Copyright (c) 2014, hallmarkdesign
  * @link		http://hallmark-design.co.uk/code/mustash
  * @since		1.0
- * @filesource 	./system/expressionengine/third_party/mustash/models/mustash_settings_model.php
+ * @filesource 	./system/user/addons/mustash/models/mustash_settings_model.php
  */
-class Mustash_settings_model extends CI_Model
-{
+class Mustash_settings_model extends CI_Model {
+	
 	/**
 	 * The table we're operating on
 	 * 
@@ -27,7 +27,7 @@ class Mustash_settings_model extends CI_Model
 	public $_defaults = array(
 		'license_number' => '',
 		'list_limit' => '20',
-		'date_format' => '%M %d, %Y, %H:%i:%s',
+		'date_format' => '%d %M %Y %H:%i',
 		'can_manage_bundles' => array('1'),
 		'can_manage_rules' => array('1'),
 		'can_manage_settings' => array('1'),

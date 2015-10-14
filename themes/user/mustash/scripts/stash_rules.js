@@ -74,7 +74,6 @@ $(document).ready(function(){
 
             // remove active state
             $self.removeClass('active');
-
         }
 
         e.stopPropagation(); 

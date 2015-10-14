@@ -12,9 +12,10 @@
 	font-family: 'consolas', 'andale mono', 'monaco', monospace;
 	background:#333;
 	color:#AAA;
-	padding:3px;
+	padding:5px;
 	border:0;
 	border-radius:0;
+	margin-bottom: 10px;
 }
 
 .stash_code_format:focus {
@@ -29,6 +30,17 @@
 .stash_notes {
 	margin-top: 3px;
 	font-size: .92em;
+}
+
+.stash_url {
+	display: inline-block;
+	font-size: .92em;
+	margin: 4px 0 10px 0;
+	padding: 4px 8px;
+	border: 1px solid #FFD30E;
+	color: #5A4903;
+	background: #FFF8DA;
+	border-radius: 4px;
 }
 
 .stash_instructions {
@@ -64,13 +76,9 @@
 	margin-bottom: 1em;
 }
 
-	.stash_rules table {
-		border-collapse: collapse;
-	}
-
-	.stash_rules td {
-		background-color: #ECEFF2 ! important;
-	}
+.stash_rules td {
+	vertical-align: top;
+}
 
 .stash_drag_handle {
 	font-size: 14px;
@@ -102,6 +110,76 @@
 	text-decoration: none;
 }
 
+.stash_control {
+	display: block;
+	margin: 0 0 10px 0;
+}
+
+.stash_control:last-child {
+	margin: 0;
+}
+
+.stash_control_label {
+	display: block;
+	font-size: .92em;
+	padding: 3px 0;
+}
+
+.stash_control select {
+	width: 100%;
+	min-width: 12em;
+	margin-right: 0;
+}
+
+.stash_pattern {
+	min-width: 18em;
+}
+
+.stash_pattern_note {
+	display: block;
+	min-height: auto;
+	height: 148px;
+	margin-top: 10px;
+	color: #969696;
+	font-family: inherit;
+    font-size: 100%;
+}
+
+@media screen and (min-width:56em) {
+
+	.stash_control {
+		border-bottom: 1px dotted #CDCDCD;
+		padding-bottom: 10px;
+	}
+
+	.stash_control:last-child {
+		border: none;
+	}
+
+	.stash_control_label {
+		float: left;
+		width: 22%;
+		padding-right: 10px;
+		padding-bottom: 0;
+	}
+
+	.stash_control select {
+		float: right;
+		width: 68%;
+		min-width: none;
+	}
+
+	.stash_pattern_note {
+		height: 97px;
+	}
+
+}
+
+.stash_control:after {
+	content: " ";
+  	display: table;
+  	clear: both;
+}
 
 div[aria-expanded="false"] {
 	height:0;
@@ -113,27 +191,14 @@ div[aria-expanded="true"] {
 	height: auto;
 	visibility:visible;
     /* max-height:4000px; */
-    transition: 0.25s all ease-in; 
 }  
 
 .stash_btn_help {
-	display: inline-block;
-	background: #D3D9DF;
-	padding: 5px 10px;
-	border: 1px solid #EDF0F4;
-	margin-bottom: -1px;
-	color: #333 ! important;
-}
-
-.stash_btn_help:hover {
-	text-decoration: none ! important;
-	background: #363F48;
-	color: white  ! important;
+	position: relative;
+	top:8px;
 }
 
 .stash_btn_help.active {
-	background: #FEF4C7;
-	border-color: #EAD993;
 	color: #333 ! important;
 }
 
@@ -160,28 +225,75 @@ div[aria-expanded="true"] {
 	}
 
 .stash_footnote {
-	background: #FEF9E3;
-	border: 1px solid #EAD993;
-	padding: 20px 20px 10px 20px;
-	border-radius: 5px;
-	margin-top: 1em;
+	color: #000;
+	background: #fffdf3;
+	border: 1px solid #ffea8d;
+	border-width: 1px 0;
+	position: relative;
+	z-index: 3;
+	font-size: .92em;
+	line-height: 1.4;
 }
 
+	.stash_footnote[aria-expanded="true"] {
+		padding: 10px;
+		margin: -11px -10px 15px;
+	}
+
+	.stash_footnote h3 {
+		color: #745f00;
+		font-size: 1.2em;
+		margin: 1.5em 0 0 0;
+	}
+
+	.stash_footnote h3:first-child {
+		margin-top:0;
+	}
+
 	.stash_footnote h4 {
-		color: #827D61 ! important;
-		margin-bottom: .75em;
+		color: #745f00;
+		font-size: 1.1em;
+		margin: 1.5em 0 .5em 0;
 	}
 
 	.stash_footnote h5 {
 		font-size: 1em;
-		margin-top: .75em;
+		margin-top: 1.5em;
 	}
 
-	.stash_footnote h5, .stash_footnote p {
-		margin-left: 1em;
+	.stash_footnote p {
+		margin: 1em 0;
 	}
 
 	.stash_footnote ul {
-		font-family: 'consolas', 'andale mono', 'monaco', monospace;
-		margin: 0 0 1em 1em;
+		list-style: none;
+		margin: .25em 0 1em 0;
+
 	}
+
+	.stash_footnote li {
+		margin: .5em 0;
+	}
+
+	.stash_footnote strong {
+		font-style: normal;
+	}
+
+	.stash_footnote code {
+		font-family: 'New Courier', Courier, Monospace;
+    	border: 1px solid #e4e4e4;
+    	padding: 2px 4px;
+    	background: #FBF7DE;
+	}
+
+	.stash_footnote code:focus, .stash_footnote code:hover {
+		background-color: #fff8da;
+    	border-color: #ffdc41;
+    }
+
+@media screen and (min-width:56em) {
+	.stash_footnote[aria-expanded="true"] {
+		padding: 40px;
+	}
+}
+

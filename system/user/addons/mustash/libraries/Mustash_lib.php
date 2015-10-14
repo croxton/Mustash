@@ -1,6 +1,8 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
- /**
+require_once PATH_THIRD . 'mustash/libraries/Mustash_plugin.php';
+
+/**
  * Mustash Library
  *
  * Contains generic methods for Mustash CP interface
@@ -10,10 +12,10 @@
  * @copyright	Copyright (c) 2014, hallmarkdesign
  * @link		http://hallmark-design.co.uk/code/mustash
  * @since		1.0
- * @filesource 	./system/expressionengine/third_party/mustash/Mustash_lib.php
+ * @filesource 	./system/user/addons/mustash/Mustash_lib.php
  */
-class Mustash_lib
-{
+class Mustash_lib {
+
 	/**
 	 * Preceeds URLs 
 	 * @var mixed
@@ -28,14 +30,13 @@ class Mustash_lib
 
 	public function __construct()
 	{
-		$this->EE =& get_instance();
-		$this->EE->load->model('mustash_settings_model', 'mustash_settings');
-		$this->EE->load->model('mustash_model');
+		ee()->load->model('mustash_settings_model', 'mustash_settings');
+		ee()->load->model('mustash_model');
 		$this->settings = $this->get_settings();
 
 		// config
 		$path = dirname(dirname(realpath(__FILE__)));
-		include $path.'/config'.EXT;
+		include $path.'/config.php';
 		$this->name = $config['name'];
 		$this->version = $config['version'];
 		$this->mod_name = $config['mod_url_name'];
@@ -44,17 +45,17 @@ class Mustash_lib
 	
 	public function get_settings()
 	{
-		if (!isset($this->EE->session->cache['mustash']['settings'])) 
+		if (!isset(ee()->session->cache['mustash']['settings'])) 
 		{	
-			$this->EE->session->cache['mustash']['settings'] = $this->EE->mustash_settings->get_settings();
+			ee()->session->cache['mustash']['settings'] = ee()->mustash_settings->get_settings();
 		}
-		return $this->EE->session->cache['mustash']['settings'];
+		return ee()->session->cache['mustash']['settings'];
 	}
 
 	public function update_settings(array $data)
 	{
 		// validate settings fields and update the model
-		if ($this->EE->mustash_settings->update_settings($data))
+		if (ee()->mustash_settings->update_settings($data))
 		{
 			// uninstall all existing plugins
 			$plugins = $this->get_all_plugins();
@@ -93,7 +94,7 @@ class Mustash_lib
     	if( ! isset(self::$plugins[$plugin]))
 		{	
 			// load and instantiate the plugin if it doesn't exist already
-			require_once PATH_THIRD. $this->mod_name . '/plugins/' . $plugin .EXT;
+			require_once PATH_THIRD. $this->mod_name . '/plugins/' . $plugin .'.php';
 			self::$plugins[$plugin] = new $plugin;
 		}
 		// check that we have an object that extends Mustash_plugin
@@ -113,12 +114,12 @@ class Mustash_lib
 	 */
   	public function get_all_plugins()
   	{
-  		$this->EE->load->helper('directory');
+  		ee()->load->helper('directory');
 		$plugins = directory_map(PATH_THIRD . $this->mod_name . '/plugins', 1);
 
 		# PHP 5.3+ only
 		#$plugins = preg_filter('/^(stash_[a-zA-Z0-9_-]+_pi)'.EXT.'$/i', '$1', $plugins);
-		$result = preg_replace('/^(stash_[a-zA-Z0-9_-]+_pi)'.EXT.'$/i', '$1', $plugins);
+		$result = preg_replace('/^(stash_[a-zA-Z0-9_-]+_pi)\.php$/i', '$1', $plugins);
 		$plugins = array_diff($result, $plugins);
 
 		return $plugins;
@@ -211,68 +212,34 @@ class Mustash_lib
 	{
 		$this->url_base = $url_base;
 	}
-	
-	public function perpage_select_options()
-	{
-		return array(
-			   '10' => '10 '.lang('results'),
-			   '25' => '25 '.lang('results'),
-			   '75' => '75 '.lang('results'),
-			   '100' => '100 '.lang('results'),
-			   '150' => '150 '.lang('results')
-		);		
-	}
 
 	public function scope_select_options($label='filter_by_scope', $label_value='')
 	{
 		return array(
-			   $label_value => lang($label),
 			   'site' => lang('var_scope_global'),
 			   'user' 	=> lang('var_scope_user')
 		);				
 	}
 
-
 	public function bundle_select_options($label='filter_by_bundle', $label_value='')
 	{
-		$list = array($label_value => lang($label));
+		$list = array();
 
-		if ($bundles = $this->EE->mustash_model->list_bundles())
+		if ($bundles = ee()->mustash_model->list_bundles())
 		{
 			$list += $bundles;
 		}
 		return $list;
-	}		
-	
-	public function create_pagination($method, $total, $per_page)
-	{
-		$config = array();
-		$config['page_query_string'] = TRUE;
-		$config['base_url'] = $this->url_base.$method;
-		$config['total_rows'] = $total;
-		$config['per_page'] = $per_page;
-		$config['page_query_string'] = TRUE;
-		$config['full_tag_open'] = '<p id="paginationLinks">';
-		$config['full_tag_close'] = '</p>';
-		$config['prev_link'] = '<img src="'.$this->EE->cp->cp_theme_url.'images/pagination_prev_button.gif" width="13" height="13" alt="&lt;" />';
-		$config['next_link'] = '<img src="'.$this->EE->cp->cp_theme_url.'images/pagination_next_button.gif" width="13" height="13" alt="&gt;" />';
-		$config['first_link'] = '<img src="'.$this->EE->cp->cp_theme_url.'images/pagination_first_button.gif" width="13" height="13" alt="&lt; &lt;" />';
-		$config['last_link'] = '<img src="'.$this->EE->cp->cp_theme_url.'images/pagination_last_button.gif" width="13" height="13" alt="&gt; &gt;" />';
-		$config['query_string_segment'] = 'offset';
-
-		$this->EE->pagination->initialize($config);
-		return $this->EE->pagination->create_links();		
 	}
 	
 	public function is_installed_module($module_name)
 	{
-		$data = $this->EE->db->select('module_name')->from('modules')->like('module_name', $module_name)->get();
+		$data = ee()->db->select('module_name')->from('modules')->like('module_name', $module_name)->get();
 		if($data->num_rows == '1')
 		{
 			return TRUE;
 		}
 	}
-
 
 	/**
 	 * Load assets: extra JS and CSS
@@ -289,15 +256,13 @@ class Mustash_lib
 		$header = array();
 		$footer = array();
 
-		#$header[] = '<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>';
-
 		// -------------------------------------
 		//  Loop through assets
 		// -------------------------------------
 
 		$asset_url = ((defined('URL_THIRD_THEMES'))
 		           ? URL_THIRD_THEMES
-		           : $this->EE->config->item('theme_folder_url') . 'third_party/')
+		           : ee()->config->item('theme_folder_url') . 'third_party/')
 		           . $this->mod_name . '/';
 
 		foreach ($assets AS $file)
@@ -321,7 +286,7 @@ class Mustash_lib
 
 		if ($header)
 		{
-			$this->EE->cp->add_to_head(
+			ee()->cp->add_to_head(
 				NL."<!-- {$this->mod_name} assets -->".NL.
 				implode(NL, $header).
 				NL."<!-- / {$this->mod_name} assets -->".NL
@@ -330,7 +295,7 @@ class Mustash_lib
 
 		if ($footer)
 		{
-			$this->EE->cp->add_to_foot(
+			ee()->cp->add_to_foot(
 				NL."<!-- {$this->mod_name} assets -->".NL.
 				implode(NL, $footer).
 				NL."<!-- / {$this->mod_name} assets -->".NL
@@ -346,7 +311,7 @@ class Mustash_lib
 	 */
 	public function prune() 
 	{
-		return $this->EE->mustash_model->prune_keys();
+		return ee()->mustash_model->prune_keys();
 	}
 
 	/**
@@ -361,14 +326,14 @@ class Mustash_lib
 	{
 		if ( isset($this->settings['can_manage_'.$area]))
 		{	
-			if ($this->EE->session->userdata['group_id'] == 1) 
+			if (ee()->session->userdata['group_id'] == 1) 
 			{
 				// superadmins get a free pass...
 				return TRUE;
 			}
 			else
 			{
-				return in_array($this->EE->session->userdata['group_id'], $this->settings['can_manage_'.$area]);
+				return in_array(ee()->session->userdata['group_id'], $this->settings['can_manage_'.$area]);
 			}
 		}
 		return FALSE;
@@ -380,360 +345,84 @@ class Mustash_lib
 	
 	public function get_variables($where=array(), $perpage=20, $offset=0, $order=NULL)
 	{
-		return $this->EE->mustash_model->get_variables($where, $perpage, $offset, $order);
+		return ee()->mustash_model->get_variables($where, $perpage, $offset, $order);
 	}
 
 	public function get_total_variables($where=array(), $perpage=20, $offset=0, $order=NULL)
 	{
-		return $this->EE->mustash_model->get_total_variables($where, $perpage, $offset, $order);
+		return ee()->mustash_model->get_total_variables($where, $perpage, $offset, $order);
 	}
 
 	public function get_bundles($perpage=20, $offset=0, $order=NULL)
 	{
-		return $this->EE->mustash_model->get_bundles($perpage, $offset, $order);
+		return ee()->mustash_model->get_bundles($perpage, $offset, $order);
 	}
 
 	public function get_total_bundles($perpage=20, $offset=0, $order=NULL)
 	{
-		return $this->EE->mustash_model->get_total_bundles($perpage, $offset, $order);
+		return ee()->mustash_model->get_total_bundles($perpage, $offset, $order);
 	}
 
 	public function get_variable($id)
 	{
-		return $this->EE->mustash_model->get_variable($id);
+		return ee()->mustash_model->get_variable($id);
 	}
 
 	public function update_variable($id, $parameters=NULL)
 	{
-		return $this->EE->mustash_model->update_variable($id, $parameters);
+		return ee()->mustash_model->update_variable($id, $parameters);
 	}
 
 	public function clear_variables($ids)
 	{
-		return $this->EE->mustash_model->clear_variables($ids);
+		return ee()->mustash_model->clear_variables($ids);
 	}
 
 	public function clear_matching_variables($bundle_id = FALSE, $scope = NULL, $regex = NULL, $invalidate = 0)
 	{
-		return $this->EE->mustash_model->clear_matching_variables($bundle_id, $scope, $regex, $invalidate);
+		return ee()->mustash_model->clear_matching_variables($bundle_id, $scope, $regex, $invalidate);
 	}
 
 	public function flush_cache($site_id = 1)
 	{
-		return $this->EE->mustash_model->flush_cache($site_id);
+		return ee()->mustash_model->flush_cache($site_id);
 	}
 
 	public function get_bundle($id)
 	{
-		return $this->EE->mustash_model->get_bundle($id);
+		return ee()->mustash_model->get_bundle($id);
 	}
 
 	public function add_bundle($data)
 	{
-		return $this->EE->mustash_model->add_bundle($data);
+		return ee()->mustash_model->add_bundle($data);
 	}
 
 	public function update_bundle($id, $data)
 	{
-		return $this->EE->mustash_model->update_bundle($id, $data);
+		return ee()->mustash_model->update_bundle($id, $data);
 	}
 
-	public function delete_bundle($id)
+	public function delete_bundles($ids)
 	{
-		return $this->EE->mustash_model->delete_bundle($id);
+		return ee()->mustash_model->delete_bundles($ids);
 	}
 
 	public function is_bundle_name_unique($bundle)
 	{
-		return $this->EE->mustash_model->is_bundle_name_unique($bundle);
+		return ee()->mustash_model->is_bundle_name_unique($bundle);
 	}
 
 	public function get_rules()
 	{
-		return $this->EE->mustash_model->get_rules();
+		return ee()->mustash_model->get_rules();
 	}
 
 	public function update_rules($rules)
 	{
-		return $this->EE->mustash_model->update_rules($rules);
+		return ee()->mustash_model->update_rules($rules);
 	}
-}
-
-// --------------------------------------------------------------------------
-
-/**
- * Mustash_plugin Class
- *
- * Abstract class for plugins
- *
- * @package	Mustash
- */
-abstract class Mustash_plugin {
-	
-	public $EE, $name, $short_name, $version, $priority;
-	protected $hooks = array();
-	protected $groups = array();
-	protected $ext_class_name;
-	protected $ext_version = MUSTASH_VERSION;
-	protected $site_id;
-
-	public function __construct() 
-	{
-		$this->EE = get_instance();
-		$this->ext_class_name = MUSTASH_CLASS_NAME . '_ext';
-
-		# PHP 5.3+ only
-		#$this->short_name = preg_filter('/^Stash_([a-zA-Z0-9_-]+)_pi$/i', '$1', get_class($this));
-		$this->short_name = preg_replace('/^Stash_([a-zA-Z0-9_-]+)_pi$/i', '$1', get_class($this));
-
-		$this->site_id = $this->EE->config->item('site_id');
-	}
-
-	/**
-	 * Activate plugin hooks
-	 * 
-	 * @return void
-	 */
-	public function install()
-	{
-		foreach ($this->hooks AS $hook => $markers)
-		{
-			if ( ! is_array($markers))
-			{
-				$hook = $markers;
-			}
-			if ( $hook !== '@all')
-			{
-				$this->add_hook($hook);
-			}
-		}
-	}
-
-	/**
-	 * Remove plugin hooks
-	 * 
-	 * @return void
-	 */
-	public function uninstall()
-	{
-		foreach ($this->hooks AS $hook => $markers)
-		{
-			if ( ! is_array($markers))
-			{
-				$hook = $markers;
-			}
-			$this->remove_hook($hook);
-		}
-	}
-
-	/**
-	 * get the extension hooks this plugin implements
-	 *
-	 * @access     public
-	 * @return     array
-	 */
-	public function get_hooks() 
-	{
-		return $this->hooks;
-	}
-
-	/**
-	 * Add extension hook to the Mustash extension class
-	 * Prefix the method with the plugin class short name, so we know how to find it
-	 *
-	 * @access     protected
-	 * @param      string
-	 * @return     void
-	 */
-	protected function add_hook($name)
-	{
-		$this->EE->db->insert('extensions',
-			array(
-				'class'    => $this->ext_class_name,
-				'method'   => $this->short_name . ":" . $name,
-				'hook'     => $name,
-				'settings' => '',
-				'priority' => $this->priority,
-				'version'  => $this->version,
-				'enabled'  => 'y'
-			)
-		);
-	}
-
-	/**
-	 * remove extension hook from the Mustash extension class
-	 *
-	 * @access     protected
-	 * @param      string
-	 * @return     void
-	 */
-	protected function remove_hook($name)
-	{
-		$this->EE->db->delete('extensions',
-			array(
-				'class'    => $this->ext_class_name,
-				'hook'     => $name
-			)
-		);
-	}
-
-	/**
-	 * retrieve and parse rules for a given plugin / hook
-	 *
-	 * @access     protected
-	 * @param      string
-	 * @param      array
-	 * @return     bool/array
-	 */
-	protected function get_rules($hook = NULL, $markers = array())
-	{
-		$this->EE->load->model('mustash_model');
-
-		// automatically check for rules attached to an @all hook for this plugin
-		if ( ! is_null($hook))
-		{
-			$hook = array($hook, '@all');
-		}
-
-		$rules = $this->EE->mustash_model->get_rules($this->short_name, $hook);
-
-		if ( ! empty($rules))
-		{
-			// parse markers
-			if ( ! empty($markers))
-			{
-				foreach($rules as &$rule)
-				{
-					if ( ! is_null($rule['pattern']))
-					{
-						$rule['pattern'] = $this->parse_markers($rule['pattern'], $markers);
-					}
-				}
-			}
-
-			return $rules;
-		}
-
-		return FALSE;
-	}
-
-	/**
-	 * Run each cache-breaking rule, checking that the rule group matches the group being edited
-	 *
-	 * @access	protected
-	 * @param	array
-	 * @param	integer/bool
-	 * @return	void
-	 */
-	protected function run_rules($rules, $group_id = FALSE)
-	{
-		// run rules
-		foreach($rules as $r)
-		{
-			// is the rule limited to a specific group?
-			if ( ! $r['group_id'] || ! $group_id || $r['group_id'] == $group_id)
-			{
-				$this->destroy($r['bundle_id'], $r['scope'], $r['site_id'], $r['pattern']);
-			}
-		}
-	}
-
-	/**
-	 * Retrieve, parse and run a ruleset for a specific hook
-	 *
-	 * @access	protected
-	 * @param	string
-	 * @param	integer/bool
-	 * @param	array
-	 * @return	boolean
-	 */
-	protected function flush_cache($hook, $group_id=FALSE, $markers=array())
-	{
-		// @TODO: check this is a valid hook for this plugin?
-
-		// get rules for this hook
-		if ($rules = $this->get_rules($hook, $markers))
-		{
-			// flush cache
-			$this->run_rules($rules, $group_id);
-
-			return TRUE;
-		}
-		return FALSE;
-	}
-
-	/**
-	 * parse markers in a rule pattern
-	 *
-	 * @param      string
-	 * @param      array
-	 * @access     protected
-	 * @return     string
-	 */
-	protected function parse_markers($template, $markers)
-	{
-		foreach($markers as $key => $value)
-		{
-			$template = str_replace(LD.$key.RD, $value, $template);
-		}
-		return $template;
-	}
-
-	/**
-	 * Delete one or multiple cached stash variables
-	 *
-	 * @access     protected
-	 * @return     array
-	 */
-	protected function destroy($bundle_id = FALSE, $session_id=NULL, $site_id = NULL, $regex = NULL) 
-	{
-		$this->EE->load->add_package_path(PATH_THIRD.'stash/', TRUE);
-		$this->EE->load->model('stash_model');
-
-		// prep regex
-		if ( ! is_null($regex))
-		{	
-			if ( ! preg_match('/^#(.*)#$/', $regex))
-			{
-				$regex = '^' . $regex . '$'; // match an exact key
-			}
-			else
-			{
-				$regex = trim($regex, '#');
-			}
-		}
-
-		// stagger the invalidation of matching variables over a specific time period?
-		$invalidation_period  = $this->EE->config->item('stash_invalidation_period') ? $this->EE->config->item('stash_invalidation_period') : 0; // seconds
-
-		// add the current site id and pass througb to stash model
-		return $this->EE->stash_model->delete_matching_keys(
-			$bundle_id, 
-			$session_id, 
-			is_null($site_id) ? $this->EE->config->item('site_id') : $site_id, 
-			$regex,
-			$invalidation_period
-		);
-	}
-
-	/**
-	 * Get groups for the plugin
-	 *
-	 * @access     public
-	 * @return     array
-	 */
-	public function get_groups()
-	{
-		if (empty($this->groups))
-		{
-			$this->groups = (array) $this->set_groups();
-		}
-
-		return $this->groups;
-	}
-
-	abstract protected function set_groups();
 }
 
 /* End of file Mustash_lib.php */
-/* Location: ./system/expressionengine/third_party/mustash/libraries/Mustash_lib.php */
+/* Location: ./system/user/addons/mustash/libraries/Mustash_lib.php */

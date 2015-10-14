@@ -10,20 +10,18 @@ require_once PATH_THIRD . 'stash/models/stash_model.php';
  * @copyright	Copyright (c) 2014, hallmarkdesign
  * @link		http://hallmark-design.co.uk/code/mustash/
  * @since		1.0
- * @filesource 	./system/expressionengine/third_party/mustash/models/mustash_model.php
+ * @filesource 	./system/user/addons/mustash/models/mustash_model.php
  */
-class Mustash_model extends Stash_model
-{
-	public $EE;
+class Mustash_model extends Stash_model {
+	
 	protected $site_id;
 
     function __construct()
     {
         parent::__construct();
-		$this->EE = get_instance();
 
 		// since this model is used in the CP we'll be only operating on the current selected site
-		$this->site_id = $this->EE->config->item('site_id');
+		$this->site_id = ee()->config->item('site_id');
     }
 
     /*
@@ -49,7 +47,7 @@ class Mustash_model extends Stash_model
     			 ->from('stash')
     			 ->join('stash_bundles', 'stash_bundles.id = stash.bundle_id', 'left')	
 		 		 ->where('stash.site_id', $this->site_id)
-		 		 ->where("(expire > {$this->EE->localize->now} OR expire=0)");
+		 		 ->where("(expire > ".ee()->localize->now." OR expire=0)");
 
 		// apply where conditions
 		$this->_filter_variables($where);
@@ -98,7 +96,8 @@ class Mustash_model extends Stash_model
 				}
 			}
 			unset($row);
-		} 
+		}
+
 		return $result;
     }
 
@@ -184,7 +183,7 @@ class Mustash_model extends Stash_model
     			 ->from('stash')
     			 ->join('stash_bundles', 'stash_bundles.id = stash.bundle_id', 'left')	
     			 ->where('stash.site_id', $this->site_id)
-    			 ->where("(expire > {$this->EE->localize->now} OR expire=0)");
+    			 ->where("(expire > ".ee()->localize->now." OR expire=0)");
 
     	// apply where conditions
 		$this->_filter_variables($where);
@@ -338,10 +337,10 @@ class Mustash_model extends Stash_model
     	// select bundles with a count of assigned variables in the current site
     	$this->db->select('*, (
 	    		SELECT COUNT(id) 
-	    			FROM  `' . $this->EE->db->dbprefix.'stash` 
-	    			WHERE `' . $this->EE->db->dbprefix.'stash`.`bundle_id` = `'. $this->EE->db->dbprefix .'stash_bundles`.`id`
-	    			AND   `' . $this->EE->db->dbprefix.'stash`.`site_id`   = ' . $this->site_id.'
-	    			AND  (`' . $this->EE->db->dbprefix.'stash`.`expire`    > ' .$this->EE->localize->now . ' OR `'.$this->EE->db->dbprefix.'stash`.`expire` = 0)
+	    			FROM  `' . ee()->db->dbprefix.'stash` 
+	    			WHERE `' . ee()->db->dbprefix.'stash`.`bundle_id` = `'. ee()->db->dbprefix .'stash_bundles`.`id`
+	    			AND   `' . ee()->db->dbprefix.'stash`.`site_id`   = ' . $this->site_id.'
+	    			AND  (`' . ee()->db->dbprefix.'stash`.`expire`    > ' .ee()->localize->now . ' OR `'.ee()->db->dbprefix.'stash`.`expire` = 0)
 	    		) as cnt')
     			 ->from('stash_bundles');
 
@@ -457,16 +456,15 @@ class Mustash_model extends Stash_model
 	/**
 	 * Delete an unlocked bundle
 	 *
-	 * @param integer $id
+	 * @param array $ids
 	 * @return boolean
 	 */
-	function delete_bundle($id)
+	function delete_bundles($ids)
 	{
-		$this->db->where('id', $id)
-				 ->where('is_locked', '0')
-				 ->limit(1);	
+		$this->db->where_in('id', $ids)
+				 ->where('is_locked', '0');
 
-		if ($this->EE->db->delete('stash_bundles')) 
+		if (ee()->db->delete('stash_bundles')) 
 		{	
 			return TRUE;
 		}
@@ -545,6 +543,10 @@ class Mustash_model extends Stash_model
 				if ( empty($row['pattern']))
 				{
 					$row['pattern'] = NULL;
+				} 
+				if ( empty($row['rules']))
+				{
+					$row['rules'] = NULL;
 				} 
 			}
 		} 

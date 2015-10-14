@@ -92,9 +92,9 @@ class Stash_varnish_pi extends Mustash_plugin {
 		parent::__construct();	
 
 		// allow options to be overriden by config values
-		$this->port 			= $this->EE->config->item('varnish_port')   		? $this->EE->config->item('varnish_port')   : $this->port;
-		$this->header_domain 	= $this->EE->config->item('varnish_header_domain') 	? $this->EE->config->item('varnish_header_domain') : $this->header_domain;
-		$this->header_url 		= $this->EE->config->item('varnish_header_url') 	? $this->EE->config->item('varnish_header_url') : $this->header_url;
+		$this->port 			= ee()->config->item('varnish_port')   		? ee()->config->item('varnish_port')   : $this->port;
+		$this->header_domain 	= ee()->config->item('varnish_header_domain') 	? ee()->config->item('varnish_header_domain') : $this->header_domain;
+		$this->header_url 		= ee()->config->item('varnish_header_url') 	? ee()->config->item('varnish_header_url') : $this->header_url;
 
 		$protocol 				= (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") ? "https://" : "http://";
 		$this->site_url 		= $protocol . $_SERVER['HTTP_HOST'];
@@ -172,7 +172,7 @@ class Stash_varnish_pi extends Mustash_plugin {
 				 && ( strncmp($data['key_label'], '@URI:', 5) == 0 )
 			){
 				// parse out the uri
-				$uri = $this->EE->mustash_model->parse_uri_from_key($data['key_name']);
+				$uri = ee()->mustash_model->parse_uri_from_key($data['key_name']);
 				$uri = '/' . ltrim($uri, '/');
 			}
 

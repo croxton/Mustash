@@ -8,7 +8,7 @@
  * @copyright	Copyright (c) 2014, hallmarkdesign
  * @link		http://hallmark-design.co.uk/code/mustash
  * @since		1.0
- * @filesource 	./system/expressionengine/third_party/mustash/upd.mustash.php
+ * @filesource 	./system/user/addons/mustash/upd.mustash.php
  */
 class Mustash_upd 
 { 
@@ -17,9 +17,8 @@ class Mustash_upd
          
     public function __construct() 
     { 
-		$this->EE =& get_instance();
 		$path = dirname(realpath(__FILE__));
-		include $path.'/config'.EXT;
+		include $path.'/config.php';
 		$this->class = $config['class_name'];
 		$this->rules_table = $config['rules_table'];
 		$this->version = $config['version'];
@@ -30,7 +29,7 @@ class Mustash_upd
 		$sql = array();
 
 		// install module 
-		$this->EE->db->insert(
+		ee()->db->insert(
 			'modules',
 			array(
 				'module_name' => $this->class,
@@ -42,7 +41,7 @@ class Mustash_upd
 
 		// add the rules table
 		$sql[] = "
-		CREATE TABLE `{$this->EE->db->dbprefix}stash_rules` (
+		CREATE TABLE `{ee()->db->dbprefix}stash_rules` (
 			`id` int(11) unsigned NOT NULL auto_increment,
 			`site_id` int(4) unsigned NOT NULL default '1',
 			`plugin` varchar(64) NOT NULL,
@@ -51,6 +50,7 @@ class Mustash_upd
 			`bundle_id` int(11) unsigned default NULL,
 			`scope` ENUM('site', 'user') default NULL,
 			`pattern` varchar(255) default NULL,
+			`notes` TEXT default NULL,
 			`ord` int(11) unsigned NOT NULL default '0',
 			PRIMARY KEY  (`id`),
 			KEY `plugin` (`plugin`),
@@ -60,7 +60,7 @@ class Mustash_upd
 
 		// add the settings table
 		$sql[] = "
-		CREATE TABLE `{$this->EE->db->dbprefix}stash_settings` (
+		CREATE TABLE `{ee()->db->dbprefix}stash_settings` (
 			`id` int(11) unsigned NOT NULL auto_increment,
 			`setting_key` varchar(32) NOT NULL default '',
 			`setting_value` text,
@@ -76,7 +76,7 @@ class Mustash_upd
 		// run the queries one by one
 		foreach ($sql as $query)
 		{
-			$this->EE->db->query($query);
+			ee()->db->query($query);
 		}	
 		
 		return TRUE;
@@ -84,22 +84,22 @@ class Mustash_upd
 
 	public function uninstall()
 	{
-		$this->EE->load->dbforge();
+		ee()->load->dbforge();
 	
-		$this->EE->db->select('module_id');
-		$query = $this->EE->db->get_where('modules', array('module_name' => $this->class));
+		ee()->db->select('module_id');
+		$query = ee()->db->get_where('modules', array('module_name' => $this->class));
 	
-		$this->EE->db->where('module_id', $query->row('module_id'));
-		$this->EE->db->delete('module_member_groups');
+		ee()->db->where('module_id', $query->row('module_id'));
+		ee()->db->delete('module_member_groups');
 	
-		$this->EE->db->where('module_name', $this->class);
-		$this->EE->db->delete('modules');
+		ee()->db->where('module_name', $this->class);
+		ee()->db->delete('modules');
 
-		$this->EE->db->where('class', $this->class);
-		$this->EE->db->delete('actions');
+		ee()->db->where('class', $this->class);
+		ee()->db->delete('actions');
 
-		$this->EE->dbforge->drop_table('stash_settings');
-		$this->EE->dbforge->drop_table('stash_rules');
+		ee()->dbforge->drop_table('stash_settings');
+		ee()->dbforge->drop_table('stash_rules');
 	
 		return TRUE;
 	}
@@ -109,8 +109,22 @@ class Mustash_upd
 		if ($current == $this->version)
 		{
 			return FALSE;
-		}	
+		}
 
+		$sql = array();
+
+		// Update to 2.0.0
+        if (version_compare($current, '2.0.0', '<'))
+        {
+			$sql[] = "ALTER TABLE `exp_stash_rules` ADD `notes` TEXT NULL AFTER `pattern`";	
+		}
+
+		foreach ($sql as $query)
+        {
+            ee()->db->query($query);
+        }  
+
+		// update version number
 		return TRUE;
 	}
 

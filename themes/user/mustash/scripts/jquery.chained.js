@@ -22,7 +22,7 @@
             /* Handles maximum two parents now. */
             $parent_selector.each(function() {
                                                 
-                $(this).bind("change", function() {
+                $(this).on("change initChained", function() {
                     $(self).html(backup.html());
 
                     /* If multiple parents build classname like foo\bar. */
@@ -48,11 +48,11 @@
                 
                     /* If we have only the default value disable select. */
                     if (1 == $("option", self).size() && ($(self).val() === "" || $(self).val() === "NULL")) {
-                        $(self).css("visibility", "hidden");
+                        $(self).attr("disabled", "disabled");
                     } else {
-                        $(self).css("visibility", "visible");
+                        $(self).removeAttr("disabled");
                     }
-                    $(self).trigger("change");
+                    $(self).trigger("initChained");
                 });
                 
                 /* Force IE to see something selected on first page load, */
@@ -62,7 +62,7 @@
                 }
 	    
                 /* Force updating the children. */
-                $(this).trigger("change");             
+                $(this).trigger("initChained");             
 
             });
         });

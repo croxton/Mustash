@@ -99,7 +99,7 @@ class Stash_taxonomy_pi extends Mustash_plugin {
 	 */
 	private function _get_trees()
 	{
-		$result = $this->EE->db->select('id, label')
+		$result = ee()->db->select('id, label')
 							   ->from('taxonomy_trees')
 							   ->where('site_id', $this->site_id)
 							   ->order_by('label ASC')

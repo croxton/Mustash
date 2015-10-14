@@ -127,7 +127,7 @@ class Stash_forum_pi extends Mustash_plugin {
 	 */
 	private function _get_forums_by_cat()
 	{
-		$result = $this->EE->db->select('f2.forum_id as forum_id, CONCAT(f1.forum_name, ": ", f2.forum_name) AS forum_label', FALSE)
+		$result = ee()->db->select('f2.forum_id as forum_id, CONCAT(f1.forum_name, ": ", f2.forum_name) AS forum_label', FALSE)
 							   ->from('forums as f1')
 							   ->join('forums as f2', 'f1.forum_id = f2.forum_parent')
 							   ->join('forum_boards as fb', 'fb.board_id = f1.board_id', 'inner')

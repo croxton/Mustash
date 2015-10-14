@@ -8,18 +8,16 @@
  * @copyright	Copyright (c) 2014, hallmarkdesign
  * @link		http://hallmark-design.co.uk/code/mustash/
  * @since		1.0
- * @filesource 	./system/expressionengine/third_party/mustash/models/mustash_channel_data.php
+ * @filesource 	./system/user/addons/mustash/models/mustash_channel_data.php
  */
-class Mustash_channel_data extends CI_Model
-{
-	public $EE;
+class Mustash_channel_data extends CI_Model {
+	
 	protected $site_id;
 
     function __construct()
     {
         parent::__construct();
-		$this->EE = get_instance();
-		$this->site_id = $this->EE->config->item('site_id');
+		$this->site_id = ee()->config->item('site_id');
     }
 
     /**
@@ -31,7 +29,7 @@ class Mustash_channel_data extends CI_Model
 	 */
 	function get_channel_name($channel_id)
 	{
-		$result = $this->EE->db->select('channel_name')
+		$result = ee()->db->select('channel_name')
 				 		   ->from('channels')
 				 		   ->where('channel_id', $channel_id)
 						   ->limit(1)
@@ -56,7 +54,7 @@ class Mustash_channel_data extends CI_Model
 	 */
 	function get_channel($entry_id)
 	{
-		$result = $this->EE->db->select('channels.channel_id, channels.channel_name')
+		$result = ee()->db->select('channels.channel_id, channels.channel_name')
 				 		   ->from('channel_titles')
 				 		   ->join('channels', 'channel_titles.channel_id = channels.channel_id', 'left')
 				 		   ->where('channel_titles.entry_id', $entry_id)
@@ -82,7 +80,7 @@ class Mustash_channel_data extends CI_Model
 	 */
 	function get_author_id($entry_id)
 	{
-		$result = $this->EE->db->select('author_id')
+		$result = ee()->db->select('author_id')
 				 		   ->from('channel_titles')
 				 		   ->where('entry_id', $entry_id)
 						   ->limit(1)
@@ -108,7 +106,7 @@ class Mustash_channel_data extends CI_Model
 	{
 		$column = array();
 
-		$result = $this->EE->db->select('*')
+		$result = ee()->db->select('*')
 				 		    ->from('channels')
 				 		    ->where('site_id', $this->site_id)
 				 		    ->get();
@@ -135,7 +133,7 @@ class Mustash_channel_data extends CI_Model
 	 */
 	function get_url_title($entry_id)
 	{
-		$result = $this->EE->db->select('url_title')
+		$result = ee()->db->select('url_title')
 				 		   ->from('channel_titles')
 				 		   ->where('entry_id', $entry_id)
 						   ->limit(1)
@@ -160,7 +158,7 @@ class Mustash_channel_data extends CI_Model
 	 */
 	function get_comment($comment_id)
 	{
-		$result = $this->EE->db->select('comments.*, channels.channel_name')
+		$result = ee()->db->select('comments.*, channels.channel_name')
 						   ->from('comments')
 				 		   ->join('channels', 'comments.channel_id = channels.channel_id', 'left')
 				 		   ->where('comments.comment_id', $comment_id)
@@ -186,7 +184,7 @@ class Mustash_channel_data extends CI_Model
 	 */
 	function get_entry($entry_id)
 	{
-		$result = $this->EE->db->select('channel_titles.*, channels.channel_name')
+		$result = ee()->db->select('channel_titles.*, channels.channel_name')
 						   ->from('channel_titles')
 				 		   ->join('channels', 'channel_titles.channel_id = channels.channel_id', 'left')
 				 		   ->where('channel_titles.entry_id', $entry_id)

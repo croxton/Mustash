@@ -52,7 +52,7 @@ class Stash_api_pi extends Mustash_plugin {
 		parent::__construct();
 
 		// get custom hooks from settings
-		$settings = $this->EE->mustash_lib->get_settings();
+		$settings = ee()->mustash_lib->get_settings();
 
 		if ($settings['api_hooks'])
 		{

@@ -1,42 +1,40 @@
-<!-- div required by datatables -->
-<div id="filter_ajax_indicator"></div>
+<div class="box">
+	<div class="tbl-ctrls">
+		<?php echo form_open($form_url)?>
+			<fieldset class="tbl-search right">
+				<a class="btn tn action" href="<?php echo $add_bundle_url ?>"><?php echo lang('add_bundle'); ?></a>
+			</fieldset>
+			<h1>
+				<?=$cp_heading?>
+			</h1>
+			<?=ee('CP/Alert')->getAllInlines()?>
 
-<?php 
-	
-	$this->table->set_template($cp_pad_table_template);
-	$this->table->set_heading(
-		lang('ID'),
-		lang('bundle_label'),
-		'&nbsp;',
-		'&nbsp;',
-		'&nbsp;',
-		'&nbsp;'
-	);
+			<?php echo $table; ?>
+			<?=$pagination?>
 
-	if(count($bundles) >= '1')
-	{
-		foreach($bundles as $b)
-		{
-			$this->table->add_row(
-				$b['id'],
-				( $b['is_locked'] == 1 ? '<i class="stash_icon icon-lock"></i>' : '') . '<strong>'.$b['bundle_label'].'</strong>',
-				anchor($url_base.'variables&amp;bundle_id='.$b['id'], lang('view_variables')) . ' ('.$b['cnt'].')',
-				anchor($url_base.'clear_cache&amp;bundle_id='.$b['id'], lang('delete_variables')) ,
-				( $b['is_locked'] == 1 ? "&ndash;" : anchor($url_base.'edit_bundle&amp;bundle_id='.$b['id'], lang('edit_bundle')) ),
-				( $b['is_locked'] == 1 ? "&ndash;" : anchor($url_base.'delete_bundle_confirm&amp;bundle_id='.$b['id'], lang('delete_bundle')))
-			);
-		}
-	}
-	else
-	{
-		$cell = array('data' => lang('no_matching_bundles'), 'colspan' => 7);
-		$this->table->add_row($cell);
-	}
-	
-	echo $this->table->generate();
-	
+			<?php if ($total > 0) : ?>
+			<fieldset class="tbl-bulk-act hidden">
+				<select name="bulk_action">
+					<option value="">-- <?=lang('with_selected')?> --</option>
+					<option value="remove" data-confirm-trigger="selected" rel="modal-confirm-remove-entry"><?=lang('remove')?></option>
+				</select>
+				<button class="btn submit" data-conditional-modal="confirm-trigger"><?=lang('submit')?></button>
+			</fieldset>
+			<?php endif; ?>
+
+		<?=form_close()?>
+	</div>
+</div>
+
+<?php
+$modal_vars = array(
+	'name'		=> 'modal-confirm-remove-entry',
+	'form_url'	=> $form_url,
+	'hidden'	=> array(
+		'bulk_action'	=> 'remove'
+	)
+);
+
+$modal = $this->make('ee:_shared/modal_confirm_remove')->render($modal_vars);
+ee('CP/Modal')->addModal('remove-entry', $modal);
 ?>
-<div class="tableFooter">
-	<span class="js_hide"><?php echo $pagination?></span>	
-	<div id="tablePagination"><span class="pagination" id="filter_pagination"></span></div>
-</div>	

@@ -1,45 +1,42 @@
-<?php $this->load->view('errors'); ?>
+<div class="box">
 
-<?php echo form_open(
-	$query_base.(isset($id)? 'edit_bundle&amp;bundle_id='.$id : 'add_bundle'), 
-	array('id'=>'edit_bundle')
-)?>
+	<h1><?=$cp_heading?> <span class="req-title"><?=lang('required_fields')?></span></h1>
 
-	<input type="hidden" value="yes" name="<?php echo isset($id)?'update_bundle':'insert_bundle'?>">
+	<?php echo form_open($form_url, array('class'=>'settings'))?>
 
-	<table cellpadding="0" cellspacing="0" style="width:100%" class="mainTable">
-		<colgroup>
-			<col style="width:40%" />
-			<col style="width:60%" />
-		</colgroup>
-		<thead>
-			<tr>
-				<th scope="col" colspan="2"><?php echo isset($id)? lang('edit_bundle') : lang('add_bundle')?> <?php echo  isset($id)? '#'.$id : ''?></th>
-			</tr>
-		</thead>
-		<tbody>
+		<?php echo ee('CP/Alert')->getAllInlines()?>
 
-			<tr class="<?php echo stash_zebra()?>">
-				<td>
-					<label class="stash-label" for="bundle_name"><em class="required">*</em> <?php echo lang('bundle_name')?></label>
-					<div class="stash-notes"><?php echo lang('bundle_name_help')?></div>
-				</td>
-				<td>
-					<?php echo form_input('bundle_name', (isset($bundle_name)? $bundle_name : ''), 'id="bundle_name"') ?>
-				</td>
-			</tr>
+		<input type="hidden" value="yes" name="<?php echo isset($id)?'update_bundle':'insert_bundle'?>">
 
-			<tr class="<?php echo stash_zebra()?>">
-				<td>
-					<label class="stash-label" for="bundle_label"><em class="required">*</em> <?php echo lang('bundle_label')?></label>
-					<div class="stash-notes"><?php echo lang('bundle_label_help')?></div>
-				</td>
-				<td>
-					<?php echo  form_input('bundle_label', (isset($bundle_label)? $bundle_label : ''), 'id="bundle_label"') ?>
-				</td>
-			</tr>
+		<fieldset class="col-group<?php if (array_key_exists('bundle_name', $errors)) : ?> invalid<? endif;?> required">
+			<div class="setting-txt col w-8">
+				<h3><?php echo lang('bundle_name')?></h3>
+				<em><?php echo lang('bundle_name_help')?></em>
+			</div>
 
-		</tbody>
-	</table>
-	<input type="submit" class="submit" value="<?php echo lang('save')?>" />
-<?php echo form_close()?>
+			<div class="setting-field col w-8">
+				<?php echo form_input('bundle_name', (isset($bundle_name)? $bundle_name : ''), 'id="bundle_name"') ?>
+				<?php if (array_key_exists('bundle_name', $errors)) : ?><em class="ee-form-error-message"><?php echo $errors['bundle_name'];?></em><? endif;?>
+			</div>
+		</fieldset>
+
+		<fieldset class="col-group<?php if (array_key_exists('bundle_label', $errors)) : ?> invalid<? endif;?> required">
+
+			<div class="setting-txt col w-8">
+				<h3><?php echo lang('bundle_label')?></h3>
+				<em><?php echo lang('bundle_label_help')?></em>
+			</div>
+
+			<div class="setting-field col w-8">
+				<?php echo  form_input('bundle_label', (isset($bundle_label)? $bundle_label : ''), 'id="bundle_label"') ?>
+				<?php if (array_key_exists('bundle_label', $errors)) : ?><em class="ee-form-error-message"><?php echo $errors['bundle_label'];?></em><? endif;?>
+			</div>
+
+		</fieldset>
+			
+		<fieldset class="form-ctrls">
+			<input class="btn" type="submit" value="<?php echo lang('save_bundle')?>" data-submit-text="<?php echo lang('save_bundle')?>" data-work-text="<?php echo lang('btn_saving')?>">
+		</fieldset>
+
+	<?php echo form_close()?>
+</div>

@@ -81,7 +81,7 @@ class Stash_comments_pi extends Mustash_plugin {
 	public function __construct()
 	{
 		parent::__construct();
-		$this->EE->load->model('mustash_channel_data');
+		ee()->load->model('mustash_channel_data');
 	}
 
 	/**
@@ -92,7 +92,7 @@ class Stash_comments_pi extends Mustash_plugin {
 	 */
 	protected function set_groups()
 	{
-		return $this->EE->mustash_channel_data->get_channels();
+		return ee()->mustash_channel_data->get_channels();
 	}
 
 	/*
@@ -118,10 +118,10 @@ class Stash_comments_pi extends Mustash_plugin {
 			// prep marker data
 			$markers = array(
 				'channel_id' 	=> $data['channel_id'],
-				'channel_name'	=> $this->EE->mustash_channel_data->get_channel_name($data['channel_id']),
+				'channel_name'	=> ee()->mustash_channel_data->get_channel_name($data['channel_id']),
 				'author_id'		=> isset($data['author_id']) ? $data['author_id'] : '0',
 			    'entry_id'		=> $data['entry_id'],
-			    'url_title'		=> $this->EE->mustash_channel_data->get_url_title($data['entry_id']),
+			    'url_title'		=> ee()->mustash_channel_data->get_url_title($data['entry_id']),
 			);
 
 			// flush cache
@@ -141,7 +141,7 @@ class Stash_comments_pi extends Mustash_plugin {
 		foreach($comment_ids as $id)
 		{
 			// get comment data
-			$comment = $this->EE->mustash_channel_data->get_comment($id);
+			$comment = ee()->mustash_channel_data->get_comment($id);
 
 			// prep marker data
 			$markers = array(
@@ -149,7 +149,7 @@ class Stash_comments_pi extends Mustash_plugin {
 				'channel_name'	=> $comment['channel_name'],
 				'author_id'		=> $comment['author_id'],
 			    'entry_id'		=> $comment['entry_id'],
-			    'url_title'		=> $this->EE->mustash_channel_data->get_url_title($comment['entry_id']),
+			    'url_title'		=> ee()->mustash_channel_data->get_url_title($comment['entry_id']),
 			);
 
 			// flush cache for each comment
@@ -170,10 +170,10 @@ class Stash_comments_pi extends Mustash_plugin {
 		// prep marker data
 		$markers = array(
 			'channel_id' 	=> $data['channel_id'],
-			'channel_name'	=> $this->EE->mustash_channel_data->get_channel_name($data['channel_id']),
+			'channel_name'	=> ee()->mustash_channel_data->get_channel_name($data['channel_id']),
 			'author_id'		=> isset($data['author_id']) ? $data['author_id'] : '0',
 		    'entry_id'		=> $data['entry_id'],
-		    'url_title'		=> $this->EE->mustash_channel_data->get_url_title($data['entry_id']),
+		    'url_title'		=> ee()->mustash_channel_data->get_url_title($data['entry_id']),
 		);
 
 		// flush cache

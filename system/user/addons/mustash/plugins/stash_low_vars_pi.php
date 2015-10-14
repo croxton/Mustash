@@ -144,7 +144,7 @@ class Stash_low_vars_pi extends Mustash_plugin {
 	 */
 	private function _get_low_var_groups()
 	{
-		$result = $this->EE->db->select('group_id, group_label')
+		$result = ee()->db->select('group_id, group_label')
 		       ->from('low_variable_groups')
 		       ->where('site_id', $this->site_id)
 		       ->order_by('group_order', 'asc')
@@ -168,7 +168,7 @@ class Stash_low_vars_pi extends Mustash_plugin {
 	 */
     private function _get_low_var_group_id($id)
 	{
-		$result = $this->EE->db->select('group_id')
+		$result = ee()->db->select('group_id')
 				 		   ->from('low_variables')
 				 		   ->where('variable_id', $id)
 						   ->limit(1)

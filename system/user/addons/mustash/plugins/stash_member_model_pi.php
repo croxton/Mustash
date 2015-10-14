@@ -84,7 +84,7 @@ class Stash_member_model_pi extends Mustash_plugin {
 	public function __construct()
 	{
 		parent::__construct();
-		$this->EE->load->model('member_model');
+		ee()->load->model('member_model');
 	}
 
 	/**
@@ -116,7 +116,7 @@ class Stash_member_model_pi extends Mustash_plugin {
 	public function member_create_end($member_id, $data, $cdata)
 	{		
 		// get the group title
-		$group = $this->EE->member_model->get_member_groups(array(), array('group_id' => $data['group_id']), 1)->row();
+		$group = ee()->member_model->get_member_groups(array(), array('group_id' => $data['group_id']), 1)->row();
 
 		// prep marker data
 		$markers = array(
@@ -143,10 +143,10 @@ class Stash_member_model_pi extends Mustash_plugin {
 	public function member_update_end($member_id, $data)
 	{
 		// hydrate the member 
-		$member = $this->EE->member_model->get_member_data($member_id, array('group_id', 'screen_name', 'username'))->row();
+		$member = ee()->member_model->get_member_data($member_id, array('group_id', 'screen_name', 'username'))->row();
 
 		// get the group title
-		$group = $this->EE->member_model->get_member_groups(array(), array('group_id' => $member->group_id), 1)->row();
+		$group = ee()->member_model->get_member_groups(array(), array('group_id' => $member->group_id), 1)->row();
 
 		// prep marker data
 		$markers = array(
@@ -173,10 +173,10 @@ class Stash_member_model_pi extends Mustash_plugin {
 		foreach($member_ids as $member_id)
 		{
 			// hydrate the member 
-			$member = $this->EE->member_model->get_member_data($member_id, array('group_id', 'screen_name', 'username'))->row();
+			$member = ee()->member_model->get_member_data($member_id, array('group_id', 'screen_name', 'username'))->row();
 
 			// get their group title
-			$group = $this->EE->member_model->get_member_groups(array(), array('group_id' => $member->group_id), 1)->row();
+			$group = ee()->member_model->get_member_groups(array(), array('group_id' => $member->group_id), 1)->row();
 
 			// prep marker data
 			$markers = array(
@@ -204,11 +204,11 @@ class Stash_member_model_pi extends Mustash_plugin {
 	 * Get a list of member groups that can access the control panel
 	 *
 	 * @access	private
-	 * @return	array
+	 * @param	array
 	 */
 	private function _get_cp_member_groups()
 	{
-		$result = $this->EE->db->select('group_id, group_title')
+		$result = ee()->db->select('group_id, group_title')
 			       ->from('member_groups')
 			       ->where('can_access_cp', 'y')
 			       ->order_by('group_title', 'asc')

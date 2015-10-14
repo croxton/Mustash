@@ -58,7 +58,7 @@ class Stash_low_reorder_pi extends Mustash_plugin {
 	public function __construct()
 	{
 		parent::__construct();
-		$this->EE->load->model('mustash_channel_data');
+		ee()->load->model('mustash_channel_data');
 	}
 
 	/**
@@ -69,7 +69,7 @@ class Stash_low_reorder_pi extends Mustash_plugin {
 	 */
 	protected function set_groups()
 	{
-		return $this->EE->mustash_channel_data->get_channels();
+		return ee()->mustash_channel_data->get_channels();
 	}
 
 	/*
@@ -93,7 +93,7 @@ class Stash_low_reorder_pi extends Mustash_plugin {
 		foreach($entries as $entry_id)
 		{
 			// get comment data
-			$entry = $this->EE->mustash_channel_data->get_entry($entry_id);
+			$entry = ee()->mustash_channel_data->get_entry($entry_id);
 
 			// prep marker data
 			$markers = array(

@@ -102,7 +102,7 @@ class Stash_navee_pi extends Mustash_plugin {
 	 */
 	private function _get_navs()
 	{
-		$result = $this->EE->db->select('navigation_id, nav_name')
+		$result = ee()->db->select('navigation_id, nav_name')
 							   ->from('navee_navs')
 							   ->where('site_id', $this->site_id)
 							   ->order_by('nav_name ASC')

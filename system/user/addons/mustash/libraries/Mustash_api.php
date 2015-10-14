@@ -8,7 +8,7 @@
  * @copyright	Copyright (c) 2014, hallmarkdesign
  * @link		http://hallmark-design.co.uk/code/mustash
  * @since		1.0
- * @filesource 	./system/expressionengine/third_party/mustash/Mustash_api.php
+ * @filesource 	./system/user/addons/mustash/Mustash_api.php
  */
 
 class Mustash_api {
@@ -20,12 +20,10 @@ class Mustash_api {
 	
 	public function __construct()
 	{
-		$this->EE = get_instance();
-
-		$this->EE->load->library('mustash_lib');
-		$this->EE->load->library('encrypt');	
-		$this->settings = $this->EE->mustash_lib->get_settings();
-		$this->EE->lang->loadfile('mustash');
+		ee()->load->library('mustash_lib');
+		ee()->load->library('encrypt');	
+		$this->settings = ee()->mustash_lib->get_settings();
+		ee()->lang->loadfile('mustash');
 		$this->_init();
 	}
 
@@ -33,7 +31,7 @@ class Mustash_api {
 	{
 		if ($this->prune)
 		{
-			if ($this->EE->mustash_lib->prune())
+			if (ee()->mustash_lib->prune())
 			{
 				$this->response('api_success', 200);
 			}
@@ -45,7 +43,7 @@ class Mustash_api {
 		else
 		{
 			// load and instantiate the plugin
-			$plugin = $this->EE->mustash_lib->plugin($this->plugin);
+			$plugin = ee()->mustash_lib->plugin($this->plugin);
 
 			if ($plugin->run($this->hook))
 			{
@@ -68,19 +66,19 @@ class Mustash_api {
 		}
 
 		// API Key?
-		$this->key = $this->EE->input->get_post('key');
+		$this->key = ee()->input->get_post('key');
 
-		if(!$this->key || $this->key == '' || $this->key != $this->EE->encrypt->decode($this->settings['api_key']))
+		if(!$this->key || $this->key == '' || $this->key != ee()->encrypt->decode($this->settings['api_key']))
 		{
 			$this->response('api_bad_key', 403);
 			exit;			
 		}
 
 		// Prune cache?
-		$this->prune = $this->EE->input->get_post('prune');
+		$this->prune = ee()->input->get_post('prune');
 		
 		// Requested hook?
-		$this->hook = $this->EE->input->get_post('hook');
+		$this->hook = ee()->input->get_post('hook');
 
 		if( ! $this->prune && (! $this->hook || empty($this->hook) || ! in_array($this->hook, explode(',', $this->settings['api_hooks']))) )
 		{
@@ -98,7 +96,7 @@ class Mustash_api {
 	 */
 	public function response($output, $http_code)
 	{
-		$return = json_encode(array('status'  => $http_code, 'message' => $this->EE->lang->line($output)));
+		$return = json_encode(array('status'  => $http_code, 'message' => ee()->lang->line($output)));
 		header('HTTP/1.1: ' . $http_code);
 		header('Status: ' . $http_code);
 		header('Content-Length: ' . strlen($return));

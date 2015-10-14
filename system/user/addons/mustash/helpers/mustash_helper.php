@@ -8,23 +8,22 @@
  * @copyright	Copyright (c) 2014, hallmarkdesign
  * @link		http://hallmark-design.co.uk/code/mustash
  * @since		1.0
- * @filesource 	./system/expressionengine/third_party/mustash/helpers/mustash_helper.php
+ * @filesource 	./system/user/addons/mustash/helpers/mustash_helper.php
  */
 if ( ! function_exists('stash_convert_timestamp'))
 {
 	function stash_convert_timestamp($date, $format = FALSE)
 	{
-		$EE =& get_instance();
-		$EE->load->helper('date');
+		ee()->load->helper('date');
 		if(!$format)
 		{
-			$format = $EE->mustash_lib->settings['date_format'];
+			$format = ee()->mustash_lib->settings['date_format'];
 		}
 		if ($date)
 		{
 			#$date = mdate($format, $date);	
 			// localize displayed date to user's timezone
-			$date = $EE->localize->format_date($format, $date);
+			$date = ee()->localize->format_date($format, $date);
 		}
 		else
 		{
@@ -72,26 +71,6 @@ if ( ! function_exists('stash_array_column'))
 	}
 }
 
-
-// --------------------------------------------------------------
-
-/**
- * Zebra table helper
- *
- * @param       bool
- * @return      string
- */
-if ( ! function_exists('stash_zebra'))
-{
-	function stash_zebra($reset = FALSE)
-	{
-		static $i = 0;
-
-		if ($reset) $i = 0;
-
-		return (++$i % 2 ? 'odd' : 'even');
-	}
-}
 
 // --------------------------------------------------------------
 

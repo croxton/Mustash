@@ -1,5 +1,7 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
+use EllisLab\ExpressionEngine\Library\CP\Table;
+
 require_once PATH_THIRD . 'mustash/config.php';
 
  /**
@@ -7,153 +9,274 @@ require_once PATH_THIRD . 'mustash/config.php';
  *
  * @package		Mustash
  * @author		Mark Croxton
- * @copyright	Copyright (c) 2014, hallmarkdesign
+ * @copyright	Copyright (c) 2015, hallmarkdesign
  * @link		http://hallmark-design.co.uk/code/mustash
  * @since		1.0
- * @filesource 	./system/expressionengine/third_party/mustash/mcp.mustash.php
+ * @filesource 	./system/user/addons/mustash/mcp.mustash.php
  */
 class mustash_mcp {
 
 	public $url_base = '';
-	public $perpage = '20';
-	public $piplength = 4; // pipeline, for ajax pagination
-	public $mod_name = MUSTASH_MOD_URL;
 
 	protected $errors = array();
 	
 	public function __construct()
 	{
-		$this->EE =& get_instance();
-		
 		// load EE stuff
-		$this->EE->load->library('javascript');
-		$this->EE->load->library('table');
-		$this->EE->load->helper('form');
-		$this->EE->load->library('encrypt');
+		ee()->load->library('encrypt');
 
-		// load Mustash libs
-		$this->EE->load->library('mustash_lib');
-		$this->EE->load->library('mustash_js');
-		$this->EE->load->library('mustash_json');
+		// load Mustash dependencies
+		ee()->load->library('mustash_lib');
+		ee()->load->helper('mustash');
 
-		// load custom helper
-		$this->EE->load->helper('mustash');
-
-		$this->settings = $this->EE->mustash_lib->get_settings();
-
-		$this->query_base = 'C=addons_modules'.AMP.'M=show_module_cp'.AMP.'module='.$this->mod_name.AMP.'method=';
-		$this->url_base = BASE.AMP.$this->query_base;
-		$this->EE->mustash_lib->set_url_base($this->url_base);
+		$this->settings = ee()->mustash_lib->get_settings();
+		$this->url_base = 'addons/settings/mustash';
+		ee()->mustash_lib->set_url_base($this->url_base);
 
 		// load local assets
-		$this->EE->mustash_lib->load_assets(
+		ee()->mustash_lib->load_assets(
 			array(
 				'styles/mustash.css',
 			)
 		);	
-
-		// load external assets
-		$this->EE->cp->add_to_head(
-			NL."<!-- {$this->mod_name} assets -->".NL.
-			'<link href="//netdna.bootstrapcdn.com/font-awesome/3.1.1/css/font-awesome.css" rel="stylesheet">'.
-			NL."<!-- / {$this->mod_name} assets -->".NL
-		);
 	}
 	
 	public function index()
 	{
-		$this->EE->functions->redirect($this->url_base.'variables');
-		exit;
+		return $this->variables();
 	}	
 	
 	public function variables()
 	{	
+	 	/* ----------------------------------------------------------------------------- 
+     	   Bulk actions
+     	   ----------------------------------------------------------------------------- */
+		if (ee()->input->post('bulk_action') == 'remove')
+		{
+			$this->delete_variables(ee()->input->post('toggle'));
+		}
+
+		/* ----------------------------------------------------------------------------- 
+     	   Setup defaults
+     	   ----------------------------------------------------------------------------- */
+		$base_url = ee('CP/URL', $this->url_base);
 		$vars = array();
 		$where = array();
+		$order = FALSE;
 
-		// register globals
-		$bundle_id 	= intval($this->EE->input->get_post('bundle_id'));
-		$scope 		= $this->EE->input->get_post('scope');
-		$offset 	= intval($this->EE->input->get_post('offset'));
+	 	/* ----------------------------------------------------------------------------- 
+     	   Add filters
+     	   ----------------------------------------------------------------------------- */
 
+		// scope filter
+		$scope_filter_options = ee()->mustash_lib->scope_select_options();
+		$scope_filter = ee('CP/Filter')->make('scope', 'filter_by_scope', $scope_filter_options);
+		$scope_filter->disableCustomValue();
+
+		// bundle filter
+		$bundle_filter_options = ee()->mustash_lib->bundle_select_options();
+		$bundle_filter = ee('CP/Filter')->make('bundle_id', 'filter_by_bundle', $bundle_filter_options);
+		$bundle_filter->disableCustomValue();
+
+		// build filters and render
+		$filters = ee('CP/Filter')
+			->add($scope_filter)
+			->add($bundle_filter);
+
+		$vars['filters'] = $filters->render($base_url);
+
+
+	 	/* ----------------------------------------------------------------------------- 
+     	   Register globals
+     	   ----------------------------------------------------------------------------- */
+
+		// bundle ID
+		$bundle_id 	= ((int) ee()->input->get('bundle_id')) ?: 0;
+
+		// scope
+		$scope 		= ee()->input->get('scope');
+		if ( ! in_array($scope, array('user', 'site')) )
+		{
+			$scope = FALSE;
+		}
+
+		// sort column
+		$sort_col 	= ee()->input->get('sort_col');
+		if ( ! in_array($sort_col, array('id', 'key_name', 'created', 'expire', 'bundle_name', 'session_id')) )
+		{
+			$sort_col = 'key_name';
+		}
+
+		// sort direction
+		$sort_dir 	= ee()->input->get('sort_dir');
+		if ( ! in_array($sort_dir, array('asc', 'desc')) )
+		{
+			$sort_dir = 'asc';
+		}
+
+		// pagination
+		$page 		= ((int) ee()->input->get('page')) ?: 1;
+		$perpage 	= $this->settings['list_limit'];
+		$offset 	= ($page - 1) * $perpage; // Offset is 0 indexed
+
+		// add filters
 		if ($bundle_id)
 		{
-			$where = array('bundle_id' => $bundle_id);
+			$where += array('bundle_id' => $bundle_id);
+			$base_url->setQueryStringVariable('bundle_id', $bundle_id);
 		}
 
-		if ($scope === 'site' || $scope === 'user')
+		if ($scope)
 		{
-			$where = array('scope' => $scope);
+			$where += array('scope' => $scope);
+			$base_url->setQueryStringVariable('scope', $scope);
 		}
-		else
+
+		// keywords
+		if ($search = ee()->input->get_post('search', TRUE))
 		{
-			$scope = '';
+			$where += array('keywords' => $search);
+			$base_url->setQueryStringVariable('search', $search);
+			#$vars['keywords'] = htmlentities($keywords);
 		}
 
-		// get an unfiltered list of variables
-		$vars['variables'] = $this->EE->mustash_lib->get_variables($where, $this->settings['list_limit'], $offset);
-		$total = $this->EE->mustash_lib->get_total_variables();
+		if ($sort_col && $sort_dir)
+		{
+			$order = array($sort_col => $sort_dir);
+			$base_url->setQueryStringVariable('sort_col', $sort_col);
+			$base_url->setQueryStringVariable('sort_dir', $sort_dir);
+		}
 
-		// include dependent js plugin(s)
-		$this->EE->cp->add_js_script(array('plugin' => 'dataTables'));
+	 	/* ----------------------------------------------------------------------------- 
+     	   Generate data
+     	   ----------------------------------------------------------------------------- */
 
-		// set the page title and right nav
-		$this->_set_variable('cp_page_title', $this->EE->lang->line('variables'));
-		$this->EE->cp->set_right_nav($this->EE->mustash_lib->variables_right_menu());
+		// get a filtered list of variables
+		$variables = ee()->mustash_lib->get_variables($where, $perpage, $offset, $order);
 
-		// inject the custom javascript for ajax filtering/sorting with datatables
-		$js = $this->EE->mustash_js->get_variables_datatables(
-			'variables_ajax_filter', 
-			$this->piplength, 
-			$this->settings['list_limit'],
-			'"aaSorting": [[ 1, "asc" ]],'
+		// get total count of filtered variables
+		$total = ee()->mustash_lib->get_total_variables($where, $perpage, $offset, $order);
+
+
+		/* ----------------------------------------------------------------------------- 
+     	   Pagination
+     	   ----------------------------------------------------------------------------- */
+
+		$vars['pagination'] = ee('CP/Pagination', $total)
+			->perPage($perpage)
+			->currentPage($page)
+			->render($base_url);
+
+		/* ----------------------------------------------------------------------------- 
+     	   Construct table
+     	   ----------------------------------------------------------------------------- */
+
+		$table = ee('CP/Table', array(
+			'limit'			=> $perpage,
+			'sort_col'		=> $sort_col,
+			'sort_dir'		=> $sort_dir
+		));
+		$table->setColumns(
+			array(
+				'id',
+				'key_name',
+				'created',
+				'expire',
+				'bundle_name',
+				'session_id' => array(
+					'encode' => FALSE
+				),
+				array(
+			      'type'  => Table::COL_CHECKBOX
+			    )
+			)
 		);
-		$this->EE->javascript->output($js);		
-		$this->EE->javascript->compile();
 
-		// create pagination (fallback)
-		$this->EE->load->library('pagination');
-		$vars['pagination'] = $this->EE->mustash_lib->create_pagination(
-				__FUNCTION__, 
-				$total, 
-				$this->settings['list_limit']
-		);
+		$table->setNoResultsText('no_matching_variables');
 
-		// set view variables
-		$vars['total_entries'] = $total;
-		$vars['perpage'] = $this->settings['list_limit'];
-		$vars['date_selected'] = '';
-		$vars['keywords'] = '';
-		$vars['bundle_id'] = $bundle_id;
-		$vars['scope'] = $scope;
-		$vars['perpage_select_options'] = $this->EE->mustash_lib->perpage_select_options();
-		$vars['scope_select_options'] = $this->EE->mustash_lib->scope_select_options();
-		$vars['bundle_select_options'] = $this->EE->mustash_lib->bundle_select_options();
+		$data = array();
+		if(count($variables) >= '1')
+		{
+			foreach($variables as $v)
+			{		
+				$data[] = array(
+					$v['id'],
 
-		// render the view
-		return $this->_load_view('variables', $vars);			
-	}
+					array(
+						'href' => ee('CP/URL', $this->url_base.'/edit_variable')->setQueryStringVariable('id', $v['id']),
+	        			'content' => $v['key_name']
+					),
+
+					html_entity_decode(stash_convert_timestamp($v['created'])),
+					html_entity_decode(stash_convert_timestamp($v['expire'])),
+					$v['bundle_label'],
+					$v['scope'] == 'site' 
+						? '<span class="st-info">'.ucfirst($v['scope']).'</span>' 
+						: '<span class="st-draft">'.ucfirst($v['scope']).'</span>',
+					array(
+						'name'  => 'toggle[]',
+						'value' => $v['id'],
+						'data' => array(
+							'confirm' => lang('variable') . ': <b>' . htmlentities($v['key_name'], ENT_QUOTES) . '</b>'
+						)
+					)
+				);
+			}
+		}
+		
+		$table->setData($data);
+
+		/* ----------------------------------------------------------------------------- 
+     	   Confirm remove modal
+     	   ----------------------------------------------------------------------------- */
+
+		ee()->javascript->set_global('lang.remove_confirm', lang('entry') . ': <b>### ' . lang('entries') . '</b>');
+		ee()->cp->add_js_script(array(
+			'file' => array(
+				'cp/confirm_remove',
+			),
+		));
 	
-	public function variables_ajax_filter()
-	{
-		die($this->EE->mustash_json->variables_ordering($this->perpage, $this->url_base, $this->piplength));
-	}
+		/* ----------------------------------------------------------------------------- 
+     	   Construct view
+     	   ----------------------------------------------------------------------------- */
 
+		// body	
+		$vars['cp_heading'] = lang('variables');
+		$vars['cp_subheading'] = sprintf(lang('found_variables_total'), $total);
+		$vars['total'] = $total;
+
+		// rendered table
+		$tableData = $table->viewData($base_url);
+
+		$view = ee('View')->make('_shared/table');
+		$vars['table'] = $view->render($tableData);
+
+		// urls
+		$vars['form_url'] = $tableData['base_url'];
+		$vars['clear_cache_url'] = ee('CP/URL', $this->url_base.'/clear_cache_confirm');
+
+		return $this->_load_view(
+			'mustash:variables', 
+			$vars, 
+			lang('variables')
+		);
+	}
 
 	public function edit_variable()
 	{	
 		// get the variable id
-		if ( ! $id = intval($this->EE->input->get('id')))
+		if ( ! $id = (int) ee()->input->get('id') )
 		{
-			$this->EE->functions->redirect($this->url_base.'variables');
+			ee()->functions->redirect( ee('CP/URL', $this->url_base) );
 			exit;
 		}
 
 		// get the variable data
-		if ( ! $vars = $this->EE->mustash_lib->get_variable($id))
+		if ( ! $vars = ee()->mustash_lib->get_variable($id))
 		{
 			// var doesn't exist, bail
-			$this->EE->functions->redirect($this->url_base.'variables');
+			ee()->functions->redirect( ee('CP/URL', $this->url_base) );
 			exit;
 		}
 
@@ -163,110 +286,109 @@ class mustash_mcp {
 			$data = array(
 				'key_name'	 => $vars['key_name'],
 				'bundle_id'	 => $vars['bundle_id'],
-				'parameters' => $this->EE->input->post('parameters')
+				'parameters' => ee()->input->post('parameters')
 			);
 
-			if($this->EE->mustash_lib->update_variable($id, $data))
+			if(ee()->mustash_lib->update_variable($id, $data))
 			{	
-				$this->EE->logger->log_action($this->EE->lang->line('log_variable_updated'));
-				$this->EE->session->set_flashdata('message_success', $this->EE->lang->line('update_success'));
-				$this->EE->functions->redirect($this->url_base.'variables');		
+				// updated successfully
+				ee()->logger->log_action(ee()->lang->line('log_variable_updated'));
+
+				ee('CP/Alert')->makeInline('entries-form')
+					->asSuccess()
+					->withTitle(lang('success'))
+					->addToBody(lang('update_success'))
+					->defer();
+
+				ee()->functions->redirect( ee('CP/URL', $this->url_base) );		
 				exit;			
 			}
 			else
 			{
-				$this->EE->session->set_flashdata('message_failure', $this->EE->lang->line('update_fail'));
-				$this->EE->functions->redirect($this->url_base.'variables');	
+				// failed to update
+				ee('CP/Alert')->makeInline('entries-form')
+					->asWarning()
+					->withTitle(lang('warning'))
+					->addToBody(lang('update_fail'))
+					->defer();
+
+				ee()->functions->redirect( ee('CP/URL', $this->url_base) );	
 				exit;					
 			}
 		}
 
-		// set the page title and right nav
-		$this->_set_variable('cp_page_title', $this->EE->lang->line('edit_variable'));
-		$this->EE->cp->set_right_nav($this->EE->mustash_lib->variables_right_menu());
+		// add form URL
+		$vars['form_url'] = ee('CP/URL', $this->url_base.'/edit_variable')->setQueryStringVariable('id', $id);
 	
 		// render the view
-		return $this->_load_view('edit_variable', $vars);		
+		return $this->_load_view(
+			'mustash:edit_variable', 
+			$vars, 
+			lang('edit_variable')
+		);		
 	}
 
-	public function delete_variables_confirm()
-	{	
-		// get the selected variables
-		if( ! $damned = $this->EE->input->post('toggle'))
-		{
-			$this->EE->functions->redirect($this->url_base.'variables');
-			exit;
-		}
-
-		$vars = array(
-			'message' => $this->EE->lang->line('delete_confirm_message'),
-		);
-
-		// get data for the doomed variables
-		$vars['variables'] = $this->EE->mustash_lib->get_variables(array('id' => $damned), 0, 0);
-
-		// set the page title
-		$this->_set_variable('cp_page_title', $this->EE->lang->line('clear_cache'));
-		$this->EE->cp->set_right_nav($this->EE->mustash_lib->variables_right_menu());
-
-		// render the view
-		return $this->_load_view('delete_variables_confirm', $vars);	
-	}
-
-
-	public function delete_variables()
+	public function delete_variables($damned)
 	{
-		// get the selected variables
-		if( ! $damned = $this->EE->input->post('toggle'))
-		{
-			$this->EE->functions->redirect($this->url_base.'variables');
-			exit;
-		}
-
 		// delete them
-		if ( $this->EE->mustash_lib->clear_variables($damned))
+		if ( ee()->mustash_lib->clear_variables($damned))
 		{
 			// successfully deleted all variables
-			$this->EE->logger->log_action($this->EE->lang->line('log_variable_deleted'));
-			$this->EE->session->set_flashdata('message_success', $this->EE->lang->line('delete_success'));
+			ee()->logger->log_action(ee()->lang->line('log_variable_deleted'));
+
+			ee('CP/Alert')->makeInline('entries-form')
+				->asSuccess()
+				->withTitle(lang('success'))
+				->addToBody(lang('delete_success'))
+				->defer();
 		}
 		else
 		{
-			$this->EE->session->set_flashdata('message_failure', $this->EE->lang->line('delete_fail'));
+			ee('CP/Alert')->makeInline('entries-form')
+				->asWarning()
+				->withTitle(lang('warning'))
+				->addToBody(lang('delete_fail'))
+				->defer();
 		}
 		
-		$this->EE->functions->redirect($this->url_base.'variables');		
-		exit;
+		ee()->functions->redirect( ee('CP/URL', $this->url_base, ee()->cp->get_url_state()) );		
+
 	}	
 
 	public function clear_cache_confirm()
 	{	
-		// set the page title
-		$this->_set_variable('cp_page_title', $this->EE->lang->line('clear_cache'));
-		$this->EE->cp->set_right_nav($this->EE->mustash_lib->variables_right_menu());
-
 		$vars = array();
 
-		// soft delete period?
-		$vars['invalidate'] = $this->EE->config->item('stash_invalidation_period') ? $this->EE->config->item('stash_invalidation_period') : 300;
+		// add form URL
+		$vars['form_url'] = ee('CP/URL', $this->url_base.'/clear_cache');
 
-		// render the view
-		return $this->_load_view('clear_cache_confirm', $vars);	
+		// soft delete period?
+		$vars['invalidate'] = ee()->config->item('stash_invalidation_period') ? ee()->config->item('stash_invalidation_period') : 300;
+
+		return $this->_load_view(
+			'mustash:clear_cache_confirm', 
+			$vars, 
+			lang('clear_cache')
+		);
 	}
 
 	public function clear_cache()
 	{
-		// get the selected scope
-		$scope = $this->EE->input->get_post('scope');
+		// bundle ID
+		$bundle_id = ((int) ee()->input->get_post('bundle_id')) ? : FALSE;
 
-		// get selected bundle
-		$bundle_id = $this->EE->input->get_post('bundle_id');
+		// scope
+		$scope = ee()->input->get_post('scope');
+		if ( ! in_array($scope, array('all', 'user', 'site')) )
+		{
+			$scope = FALSE;
+		}
 
 		// soft delete?
 		$invalidate = 0;
-		if ($this->EE->input->get_post('soft_delete'))
+		if (ee()->input->get_post('soft_delete') == 'y')
 		{
-			$value = $this->EE->input->get_post('invalidate');
+			$value = ee()->input->get_post('invalidate');
 
 			if (is_numeric($value) && $value > 0 && $value == round($value))
 			{
@@ -276,7 +398,7 @@ class mustash_mcp {
 
 		if( ! $scope && ! $bundle_id)
 		{
-			$this->EE->functions->redirect($this->url_base.'variables');
+			ee()->functions->redirect( ee('CP/URL', $this->url_base) );
 			exit;
 		}
 
@@ -284,170 +406,293 @@ class mustash_mcp {
 		if ($scope == 'all' && ! $bundle_id && $invalidate == 0)
 		{
 			// yes, we'll delete everything for this site
-			if ( $this->EE->mustash_lib->flush_cache($this->EE->config->item('site_id')))
+			if ( ee()->mustash_lib->flush_cache(ee()->config->item('site_id')))
 			{
-				$this->EE->logger->log_action($this->EE->lang->line('log_clear_cache'));
-				$this->EE->session->set_flashdata('message_success', $this->EE->lang->line('clear_success'));
+				ee()->logger->log_action(ee()->lang->line('log_clear_cache'));
+
+				ee('CP/Alert')->makeInline('entries-form')
+					->asSuccess()
+					->withTitle(lang('success'))
+					->addToBody(lang('clear_success'))
+					->defer();
 			}
 			else
 			{
-				$this->EE->session->set_flashdata('message_failure', $this->EE->lang->line('clear_fail'));
+				ee('CP/Alert')->makeInline('entries-form')
+					->asWarning()
+					->withTitle(lang('warning'))
+					->addToBody(lang('clear_fail'))
+					->defer();
 			}
-
 		}
 		else
 		{
 			// no, we'll clear the cached items individually
-			if ( $this->EE->mustash_lib->clear_matching_variables($bundle_id, $scope, NULL, $invalidate))
+			if ( ee()->mustash_lib->clear_matching_variables($bundle_id, $scope, NULL, $invalidate))
 			{
-				$this->EE->logger->log_action($this->EE->lang->line('log_clear_cache'));
-				$this->EE->session->set_flashdata('message_success', $this->EE->lang->line('clear_success'));
+				ee()->logger->log_action(ee()->lang->line('log_clear_cache'));
+
+				ee('CP/Alert')->makeInline('entries-form')
+					->asSuccess()
+					->withTitle(lang('success'))
+					->addToBody(lang('clear_success'))
+					->defer();
 			}
 			else
 			{
-				$this->EE->session->set_flashdata('message_failure', $this->EE->lang->line('clear_fail'));
+				ee('CP/Alert')->makeInline('entries-form')
+					->asWarning()
+					->withTitle(lang('warning'))
+					->addToBody(lang('clear_fail'))
+					->defer();
 			}
 		}
 
 		// after cache has cleared, redraw the variables screen with appropriate filters selected
-		$redirect = $this->url_base.'variables';
+		$redirect = ee('CP/URL', $this->url_base);
 
 		if ($bundle_id)
 		{
-			$redirect = $this->url_base.'bundles';
+			$redirect = ee('CP/URL', $this->url_base.'/bundles');
 		}
 
 		if ($scope === 'user' || $scope === 'site')
 		{
-			$redirect .= "&amp;scope=".$scope;
+			$redirect->setQueryStringVariable('scope', $scope);
 		}
 
-		$this->EE->functions->redirect($redirect);	
-		exit;
+		ee()->functions->redirect($redirect);	
 	}
-
-	/* this is arguably bad UI - do we really need to prompt user? Probably not
-
-	public function delete_bundle_vars_confirm()
-	{	
-		// get the selected bundle to clear
-		if( ! $bundle_id = $this->EE->input->get('bundle_id'))
-		{
-			$this->EE->functions->redirect($this->url_base.'bundles');
-			exit;
-		}
-
-		// hydrate the bundle
-		if ($vars = $this->EE->mustash_lib->get_bundle($bundle_id))
-		{
-			$vars += array(
-				'message' 	=> $this->EE->lang->line('delete_bundle_vars_confirm_message')
-			);
-
-			// set the page title
-			$this->_set_variable('cp_page_title', $this->EE->lang->line('clear_cache'));
-
-			// render the view
-			return $this->_load_view('delete_bundle_vars_confirm', $vars);	
-		}
-		else
-		{
-			$this->EE->functions->redirect($this->url_base.'bundles');
-			exit;
-		}
-	}
-	*/
 
 	public function bundles()
-	{	
-		if ( ! $this->EE->mustash_lib->can_access('bundles'))
+	{
+
+		/* ----------------------------------------------------------------------------- 
+     	   Access control
+     	   ----------------------------------------------------------------------------- */
+
+		if ( ! ee()->mustash_lib->can_access('bundles'))
+		{
+			show_error(lang('unauthorized_access'));
+		}
+
+		/* ----------------------------------------------------------------------------- 
+     	   Bulk actions
+     	   ----------------------------------------------------------------------------- */
+
+		if (ee()->input->post('bulk_action') == 'remove')
+		{
+			$this->_delete_bundles(ee()->input->post('toggle'));
+		}
+
+		/* ----------------------------------------------------------------------------- 
+     	   Setup defaults
+     	   ----------------------------------------------------------------------------- */
+		$base_url = ee('CP/URL', $this->url_base.'/bundles');
+		$vars = array();
+		$where = array();
+		$order = FALSE;
+
+		/* ----------------------------------------------------------------------------- 
+     	   Register globals
+     	   ----------------------------------------------------------------------------- */
+
+		// pagination
+		$page 		= ((int) ee()->input->get('page')) ?: 1;
+		$perpage 	= $this->settings['list_limit'];
+		$offset 	= ($page - 1) * $perpage; // Offset is 0 indexed   
+
+		// sort column
+		$sort_col 	= ee()->input->get('sort_col');
+		if ( ! in_array($sort_col, array('id', 'bundle_label')) )
+		{
+			$sort_col = 'id';
+		}
+
+		// sort direction
+		$sort_dir 	= ee()->input->get('sort_dir');
+		if ( ! in_array($sort_dir, array('asc', 'desc')) )
+		{
+			$sort_dir = 'asc';
+		}
+
+		if ($sort_col && $sort_dir)
+		{
+			$order = array($sort_col => $sort_dir);
+			$base_url->setQueryStringVariable('sort_col', $sort_col);
+			$base_url->setQueryStringVariable('sort_dir', $sort_dir);
+		}
+
+		/* ----------------------------------------------------------------------------- 
+     	   Generate data
+     	   ----------------------------------------------------------------------------- */
+
+		$bundles = ee()->mustash_lib->get_bundles($perpage, $offset, $order);
+		$total = ee()->mustash_lib->get_total_bundles();
+
+		/* ----------------------------------------------------------------------------- 
+     	   Pagination
+     	   ----------------------------------------------------------------------------- */
+
+		$vars['pagination'] = ee('CP/Pagination', $total)
+			->perPage($perpage)
+			->currentPage($page)
+			->render($base_url);
+
+		/* ----------------------------------------------------------------------------- 
+     	   Construct table
+     	   ----------------------------------------------------------------------------- */
+
+		$table = ee('CP/Table', array(
+			'limit'			=> $perpage,
+			'sort_col'		=> $sort_col,
+			'sort_dir'		=> $sort_dir
+		));
+		$table->setColumns(
+			array(
+				'id',
+				'bundle_label',
+				'variables' => array(
+					'sort' => FALSE
+				),
+				'manage' => array(
+					'type'	=> Table::COL_TOOLBAR
+				),
+				array(
+			      'type'  => Table::COL_CHECKBOX
+			    )
+			)
+		);
+
+		$table->setNoResultsText('no_matching_bundles');
+
+		$data = array();
+		if(count($bundles) >= '1')
+		{
+			foreach($bundles as $b)
+			{	
+				// toolbar items
+				$toolbar_items = array(
+					'sync' => array(
+						'href' => ee('CP/URL', $this->url_base.'/clear_cache')->setQueryStringVariable('bundle_id', $b['id']),
+						'title' => lang('delete_variables'),
+
+					),
+				);
+
+				if ( $b['is_locked'] != 1 ) 
+				{
+					$toolbar_items += array(
+						'edit' => array(
+							'href' => ee('CP/URL', $this->url_base.'/edit_bundle')->setQueryStringVariable('bundle_id', $b['id']),
+							'title' => lang('edit_bundle')
+						)
+					);
+				}
+
+				$data[] = array(
+
+					$b['id'],
+
+					array(
+						'content' => $b['bundle_label']
+					),
+
+					array(
+						'content' => $b['cnt'] . ' ' . lang('variables'),
+						'href' => ee('CP/URL', $this->url_base)->setQueryStringVariable('bundle_id', $b['id']),
+					),
+					
+					array('toolbar_items' => $toolbar_items),
+
+					array(
+						'name'  => 'toggle[]',
+						'value' => $b['id'],
+						'data' => array(
+							'confirm' => lang('bundle') . ': <b>' . htmlentities($b['bundle_label'], ENT_QUOTES) . '</b>'
+						),
+						// Cannot delete default bundles
+						'disabled' => ($b['is_locked'] == 1) ? 'disabled' : NULL
+					)
+
+				);
+			}
+		}
+		
+		$table->setData($data);
+
+		/* ----------------------------------------------------------------------------- 
+     	   Confirm remove modal
+     	   ----------------------------------------------------------------------------- */
+
+		ee()->javascript->set_global('lang.remove_confirm', lang('entry') . ': <b>### ' . lang('entries') . '</b>');
+		ee()->cp->add_js_script(array(
+			'file' => array(
+				'cp/confirm_remove',
+			),
+		));
+
+
+		/* ----------------------------------------------------------------------------- 
+     	   Construct view
+     	   ----------------------------------------------------------------------------- */
+
+		// body	
+		$vars['cp_heading'] = lang('bundles');
+		$vars['total'] = $total;
+
+		// rendered table
+		$tableData = $table->viewData($base_url);
+
+		$view = ee('View')->make('_shared/table');
+		$vars['table'] = $view->render($tableData);
+
+		// urls
+		$vars['form_url'] = $tableData['base_url'];
+		$vars['add_bundle_url'] = ee('CP/URL', $this->url_base.'/add_bundle');
+
+		return $this->_load_view(
+			'mustash:bundles', 
+			$vars, 
+			lang('bundles')
+		);
+	}
+
+	public function add_bundle()
+	{
+		if ( ! ee()->mustash_lib->can_access('bundles'))
 		{
 			show_error(lang('unauthorized_access'));
 		}
 
 		$vars = array();
 
-		// register globals
-		$offset = intval($this->EE->input->get_post('offset'));
-
-		// get a list of bundles
-		$vars['bundles'] = $this->EE->mustash_lib->get_bundles($this->settings['list_limit'], $offset);
-		$total = $this->EE->mustash_lib->get_total_bundles();
-
-		// include dependent js plugin(s)
-		$this->EE->cp->add_js_script(array('plugin' => 'dataTables'));
-
-		// set the page title and right nav
-		$this->_set_variable('cp_page_title', $this->EE->lang->line('bundles'));
-
-		$this->EE->cp->set_right_nav($this->EE->mustash_lib->bundles_right_menu());	
-
-		// inject the custom javascript for ajax filtering/sorting with datatables
-		$js = $this->EE->mustash_js->get_bundles_datatables(
-			'bundles_ajax_filter', 
-			$this->piplength, 
-			$this->settings['list_limit'],
-			'"aaSorting": [[ 1, "asc" ]],'
-		);
-		$this->EE->javascript->output($js);		
-		$this->EE->javascript->compile();
-
-		// create pagination
-		$this->EE->load->library('pagination');
-		$vars['pagination'] = $this->EE->mustash_lib->create_pagination(
-				__FUNCTION__, 
-				$total, 
-				$this->settings['list_limit']
-		);
-
-		// set view variables
-		$vars['total_entries'] = $total;
-		$vars['perpage'] = $this->settings['list_limit'];
-		$vars['date_selected'] = '';
-		$vars['keywords'] = '';
-
-		// render the view
-		return $this->_load_view('bundles', $vars);			
-	}
-
-
-	public function bundles_ajax_filter()
-	{
-		die($this->EE->mustash_json->bundles_ordering($this->perpage, $this->url_base, $this->piplength));
-	}
-
-
-	public function add_bundle()
-	{
-		if ( ! $this->EE->mustash_lib->can_access('bundles'))
-		{
-			show_error(lang('unauthorized_access'));
-		}
-
 		// insert the variable?
 		if(isset($_POST['insert_bundle']))
 		{	
 			$data = array(
-				'bundle_name'  => $this->EE->input->post('bundle_name'),
-				'bundle_label' => $this->EE->input->post('bundle_label')
+				'bundle_name'  => ee()->input->post('bundle_name'),
+				'bundle_label' => ee()->input->post('bundle_label')
 			);
 
 			if ( ! $data['bundle_name'])
 			{
-				$this->errors[] = lang('error_missing_bundle_name');
+				$this->errors['bundle_name'] = lang('error_missing_bundle_name');
 			}
 			elseif( ! preg_match('/^[a-z0-9\-_:]+$/i', str_replace('%s', '', $data['bundle_name'])))
 			{
-				$this->errors[] = lang('error_invalid_bundle_name');
+				$this->errors['bundle_name'] = lang('error_invalid_bundle_name');
 			}
-			elseif ( ! $this->EE->mustash_lib->is_bundle_name_unique($data['bundle_name']))
+			elseif ( ! ee()->mustash_lib->is_bundle_name_unique($data['bundle_name']))
 			{
-				$this->errors[] = lang('error_non_unique_bundle_name');
+				$this->errors['bundle_name'] = lang('error_non_unique_bundle_name');
+				$this->invalid[] = 'bundle_name';
 			}
 
 			if ( ! $data['bundle_label'])
 			{
-				$this->errors[] = lang('error_missing_bundle_label');
+				$this->errors['bundle_label'] = lang('error_missing_bundle_label');
+				$this->invalid[] = 'bundle_label';
 			}
 
 			if ( empty ($this->errors))
@@ -455,82 +700,100 @@ class mustash_mcp {
 				// remove spaces
 				$data['bundle_name'] = str_replace('%s', '', $data['bundle_name']);
 
-				if($this->EE->mustash_lib->add_bundle($data))
+				if(ee()->mustash_lib->add_bundle($data))
 				{	
-					$this->EE->logger->log_action($this->EE->lang->line('log_bundle_added'));
-					$this->EE->session->set_flashdata('message_success', $this->EE->lang->line('add_success'));
-					$this->EE->functions->redirect($this->url_base.'bundles');		
+					ee()->logger->log_action(ee()->lang->line('log_bundle_added'));
+
+					ee('CP/Alert')->makeInline('entries-form')
+								  ->asSuccess()
+								  ->withTitle(lang('success'))
+								  ->addToBody(lang('add_success'))
+								  ->defer();
+
+					ee()->functions->redirect(ee('CP/URL', $this->url_base.'/bundles'));		
 					exit;			
 				}
 				else
 				{
-					$this->EE->session->set_flashdata('message_failure', $this->EE->lang->line('add_fail'));
-					$this->EE->functions->redirect($this->url_base.'bundles');	
+					ee('CP/Alert')->makeInline('entries-form')
+								  ->asWarning()
+								  ->withTitle(lang('warning'))
+								  ->addToBody(lang('add_fail'))
+								  ->defer();
+
+					ee()->functions->redirect(ee('CP/URL', $this->url_base.'/bundles'));	
 					exit;					
 				}
 			}
 		}
 
-		// set the page title and right nav
-		$this->_set_variable('cp_page_title', $this->EE->lang->line('add_bundle'));
-		$this->EE->cp->set_right_nav($this->EE->mustash_lib->bundles_right_menu());
+		// body	
+		$vars['cp_heading'] = lang('add_bundle');
 
-		// render the view
-		return $this->_load_view('edit_bundle');	
+		// urls
+		$vars['form_url'] = ee('CP/URL', $this->url_base.'/add_bundle');
+
+		return $this->_load_view(
+			'mustash:edit_bundle', 
+			$vars, 
+			lang('add_bundle'),
+			array(  
+				ee('CP/URL', $this->url_base.'/bundles')->compile() => lang('bundles') 
+			)
+		);
 	}
-
 
 	public function edit_bundle()
 	{	
-		if ( ! $this->EE->mustash_lib->can_access('bundles'))
+		if ( ! ee()->mustash_lib->can_access('bundles'))
 		{
 			show_error(lang('unauthorized_access'));
 		}
 
 		// get the variable
-		if ( ! $id = intval($this->EE->input->get('bundle_id')))
+		if ( ! $id = (int) ee()->input->get('bundle_id') )
 		{
-			$this->EE->functions->redirect($this->url_base.'bundles');
+			ee()->functions->redirect( ee('CP/URL', $this->url_base.'/bundles') );
 			exit;
 		}
 
 		// get data for the requested bundle
-		$vars = $this->EE->mustash_lib->get_bundle($id);
+		$vars = ee()->mustash_lib->get_bundle($id);
 
 		if ( ! $vars || ( isset( $vars['is_locked']) && $vars['is_locked'] === '1') ) 
 		{
 			// var doesn't exist or is locked
-			$this->EE->functions->redirect($this->url_base.'bundles');
+			ee()->functions->redirect( ee('CP/URL', $this->url_base.'/bundles') );
 		}
 
 		// update the bundle?
 		if(isset($_POST['update_bundle']))
 		{	
 			$data = array(
-				'bundle_name'  => $this->EE->input->post('bundle_name'),
-				'bundle_label' => $this->EE->input->post('bundle_label')
+				'bundle_name'  => ee()->input->post('bundle_name'),
+				'bundle_label' => ee()->input->post('bundle_label')
 			);
 
 			if ( ! $data['bundle_name'])
 			{
-				$this->errors[] = lang('error_missing_bundle_name');
+				$this->errors['bundle_name'] = lang('error_missing_bundle_name');
 			}
 			elseif( ! preg_match('/^[a-z0-9\-_:]+$/i', str_replace('%s', '', $data['bundle_name'])))
 			{
-				$this->errors[] = lang('error_invalid_bundle_name');
+				$this->errors['bundle_name'] = lang('error_invalid_bundle_name');
 			}
 			elseif( $vars['bundle_name'] !== $data['bundle_name'] )
 			{
 				// if the name has been edited, let's check that the new name is unique
-				if ( ! $this->EE->mustash_lib->is_bundle_name_unique($data['bundle_name']))
+				if ( ! ee()->mustash_lib->is_bundle_name_unique($data['bundle_name']))
 				{
-					$this->errors[] = lang('error_non_unique_bundle_name');
+					$this->errors['bundle_name'] = lang('error_non_unique_bundle_name');
 				}
 			}
 
 			if ( ! $data['bundle_label'])
 			{
-				$this->errors[] = lang('error_missing_bundle_label');
+				$this->errors['bundle_label'] = lang('error_missing_bundle_label');
 			}
 
 			if ( empty ($this->errors))
@@ -538,100 +801,79 @@ class mustash_mcp {
 				// remove spaces
 				$data['bundle_name'] = str_replace('%s', '', $data['bundle_name']);
 
-				if($this->EE->mustash_lib->update_bundle($id, $data))
+				if(ee()->mustash_lib->update_bundle($id, $data))
 				{	
-					$this->EE->logger->log_action($this->EE->lang->line('log_bundle_updated'));
-					$this->EE->session->set_flashdata('message_success', $this->EE->lang->line('update_success'));
-					$this->EE->functions->redirect($this->url_base.'bundles');		
+					ee()->logger->log_action(ee()->lang->line('log_bundle_updated'));
+
+					ee('CP/Alert')->makeInline('entries-form')
+								  ->asSuccess()
+								  ->withTitle(lang('success'))
+								  ->addToBody(lang('update_success'))
+								  ->defer();
+
+					ee()->functions->redirect(ee('CP/URL', $this->url_base.'/bundles'));		
 					exit;			
 				}
 				else
 				{
-					$this->EE->session->set_flashdata('message_failure', $this->EE->lang->line('update_fail'));
-					$this->EE->functions->redirect($this->url_base.'bundles');	
+					ee('CP/Alert')->makeInline('entries-form')
+								  ->asWarning()
+								  ->withTitle(lang('warning'))
+								  ->addToBody(lang('update_fail'))
+								  ->defer();
+
+					ee()->functions->redirect(ee('CP/URL', $this->url_base.'/bundles'));	
 					exit;					
 				}
 			}
 		}
 
-		// set the page title and right nav
-		$this->_set_variable('cp_page_title', $this->EE->lang->line('edit_bundle'));
-		$this->EE->cp->set_right_nav($this->EE->mustash_lib->bundles_right_menu());
-	
-		// render the view
-		return $this->_load_view('edit_bundle', $vars);
+		// body	
+		$vars['cp_heading'] = lang('edit_bundle');
+
+		// urls
+		$vars['form_url'] = ee('CP/URL', $this->url_base.'/edit_bundle')->setQueryStringVariable('bundle_id', $id);
+
+		return $this->_load_view(
+			'mustash:edit_bundle', 
+			$vars, 
+			lang('edit_bundle'),
+			array(  
+				ee('CP/URL', $this->url_base.'/bundles')->compile() => lang('bundles') 
+			)
+		);
 	}
 
-
-	public function delete_bundle_confirm()
+	private function _delete_bundles($damned=array())
 	{
-		if ( ! $this->EE->mustash_lib->can_access('bundles'))
+		// delete them
+		if ( ee()->mustash_lib->delete_bundles($damned))
 		{
-			show_error(lang('unauthorized_access'));
-		}
+			// successfully deleted all variables
+			ee()->logger->log_action(ee()->lang->line('log_bundles_deleted'));
 
-		// get the selected bundle to clear
-		if( ! $bundle_id = intval($this->EE->input->get('bundle_id')) )
-		{
-			$this->EE->functions->redirect($this->url_base.'bundles');
-			exit;
-		}
-
-		// hydrate the bundle
-		if ($vars = $this->EE->mustash_lib->get_bundle($bundle_id))
-		{
-			$vars += array(
-				'message' 	=> $this->EE->lang->line('delete_bundle_confirm_message')
-			);
-
-			// set the page title
-			$this->_set_variable('cp_page_title', $this->EE->lang->line('delete_bundle'));
-			$this->EE->cp->set_right_nav($this->EE->mustash_lib->bundles_right_menu());
-
-			// render the view
-			return $this->_load_view('delete_bundle_confirm', $vars);	
+			ee('CP/Alert')->makeInline('entries-form')
+				->asSuccess()
+				->withTitle(lang('success'))
+				->addToBody(lang('delete_success'))
+				->defer();
 		}
 		else
 		{
-			$this->EE->functions->redirect($this->url_base.'bundles');
-			exit;
+			ee('CP/Alert')->makeInline('entries-form')
+				->asWarning()
+				->withTitle(lang('warning'))
+				->addToBody(lang('delete_fail'))
+				->defer();
 		}
+		
+		ee()->functions->redirect( ee('CP/URL', $this->url_base.'/bundles', ee()->cp->get_url_state()) );		
+
 	}
-
-	public function delete_bundle()
-	{
-		if ( ! $this->EE->mustash_lib->can_access('bundles'))
-		{
-			show_error(lang('unauthorized_access'));
-		}
-
-		// get the selected variables
-		if( ! $bundle_id = intval( $this->EE->input->post('bundle_id') ))
-		{
-			$this->EE->functions->redirect($this->url_base.'bundles');
-			exit;
-		}
-
-		// delete the bundle
-		if ( ! $this->EE->mustash_lib->delete_bundle($bundle_id))
-		{
-			$this->EE->session->set_flashdata('message_failure', $this->EE->lang->line('delete_fail'));
-		}
-		else
-		{
-			// successfully deleted
-			$this->EE->logger->log_action($this->EE->lang->line('log_bundle_deleted'));
-			$this->EE->session->set_flashdata('message_success', $this->EE->lang->line('delete_success'));
-		}
-
-		$this->EE->functions->redirect($this->url_base.'bundles');		
-		exit;
-	}	
-
 
 	public function rules()
 	{
-		if ( ! $this->EE->mustash_lib->can_access('rules'))
+		if ( ! ee()->mustash_lib->can_access('rules'))
 		{
 			show_error(lang('unauthorized_access'));
 		}
@@ -641,11 +883,12 @@ class mustash_mcp {
 		if(isset($_POST['update_mustash_rules']))
 		{	
 			// update rules
-			$hook  		= $this->EE->input->post('hook');
-			$group  	= $this->EE->input->post('group');
-			$bundle 	= $this->EE->input->post('bundle');
-			$scope 		= $this->EE->input->post('scope');
-			$pattern 	= $this->EE->input->post('pattern');
+			$hook  		= ee()->input->post('hook');
+			$group  	= ee()->input->post('group');
+			$bundle 	= ee()->input->post('bundle');
+			$scope 		= ee()->input->post('scope');
+			$pattern 	= ee()->input->post('pattern');
+			$notes 		= ee()->input->post('notes');
 
 			$rules = array();
 
@@ -658,38 +901,66 @@ class mustash_mcp {
 					{
 						$trigger = explode('--', $trigger);
 
+						// group_id
+						$group_id = NULL;
+						if (isset($group[$index]) && $group[$index] != "NULL") {
+							$group_id = $group[$index];
+						}
+
+						// bundle_id
+						$bundle_id = NULL;
+						if (isset($bundle[$index]) && $bundle[$index] != "NULL") {
+							$bundle_id = $bundle[$index];
+						}
+
+						// scope
+						$scope_value = NULL;
+						if (isset($scope[$index]) && $scope[$index] != "NULL") {
+							$scope_value = $scope[$index];
+						}
+
 						$rules[] = array(
 							'plugin' 	=> $trigger[0],
 							'hook' 	 	=> $trigger[1],
-							'group_id' 	=> ($group[$index]  == "NULL" ? NULL : $group[$index]),
-							'bundle_id' => ($bundle[$index] == "NULL" ? NULL : $bundle[$index]), 
-							'scope'  	=> ($scope[$index]  == "NULL" ? NULL : $scope[$index]), 
+							'group_id'	=> $group_id,
+							'bundle_id'	=> $bundle_id, 
+							'scope'		=> $scope_value,
 							'pattern'	=> $pattern[$index],
+							'notes'		=> $notes[$index],
 							'ord'		=> $index
 						);
 					}
+		
 				}
 			}
 
 			// update ruleset
-			if($this->EE->mustash_lib->update_rules($rules))
+			if(ee()->mustash_lib->update_rules($rules))
 			{	
-				$this->EE->logger->log_action($this->EE->lang->line('log_rules_updated'));
-				$this->EE->session->set_flashdata('message_success', $this->EE->lang->line('update_success'));		
+				ee()->logger->log_action(ee()->lang->line('log_rules_updated'));
+				ee('CP/Alert')->makeInline('entries-form')
+								  ->asSuccess()
+								  ->withTitle(lang('success'))
+								  ->addToBody(lang('update_success'))
+								  ->defer();		
 			}
 			else
 			{
-				$this->EE->session->set_flashdata('message_failure', $this->EE->lang->line('update_fail'));					
+				ee('CP/Alert')->makeInline('entries-form')
+								  ->asWarning()
+								  ->withTitle(lang('warning'))
+								  ->addToBody(lang('update_fail'))
+								  ->defer();					
 			}
 
 			// redirect
-			$this->EE->functions->redirect($this->url_base.'rules');	
+			ee()->functions->redirect( ee('CP/URL', $this->url_base.'/rules', ee()->cp->get_url_state()) );	
 			exit;
 		}
 
 
 		// get existing rules
-		$vars['rules'] = $this->EE->mustash_lib->get_rules();
+		$vars['rules'] = ee()->mustash_lib->get_rules();
 
 		// show the first row if there are no rules
 		if ( empty($vars['rules']))
@@ -700,42 +971,48 @@ class mustash_mcp {
 				'group_id' 	=> '',
 				'bundle_id' => '',
 				'scope' 	=> '',
-				'pattern' 	=> ''
+				'pattern' 	=> '',
+				'notes' 	=> ''
 			);
 		}
 
 		// get a list of installed plugins
-		$vars['plugins'] = $this->EE->mustash_lib->get_installed_plugins();
+		$vars['plugins'] = ee()->mustash_lib->get_installed_plugins();
 
 		// list of scope
-		$vars['scope_select_options'] = $this->EE->mustash_lib->scope_select_options('--', 'NULL');
-		$vars['bundle_select_options'] = $this->EE->mustash_lib->bundle_select_options('--', 'NULL');
+		$vars['scope_select_options'] = ee()->mustash_lib->scope_select_options('--', 'NULL');
+		$vars['bundle_select_options'] = ee()->mustash_lib->bundle_select_options('--', 'NULL');
 
 
 		// -------------------------------------
 		//  Load CSS and JS
 		// -------------------------------------
-
-		// include jquery ui
-		#$this->EE->cp->add_js_script(array('ui' => array('core')));
-
-		$this->EE->mustash_lib->load_assets(
+		// 
+		ee()->mustash_lib->load_assets(
 			array(
 				'scripts/jquery.dynoTable.js',
 				'scripts/jquery.chained.js',
 				'scripts/stash_rules.js'
+
 			)
+		);	
+
+		// set the page title
+		$vars['cp_heading'] = lang('rules');
+
+		// URLs
+		$vars['form_url'] = ee('CP/URL', $this->url_base.'/rules');
+
+		return $this->_load_view(
+			'mustash:rules', 
+			$vars, 
+			lang('rules')
 		);
-
-		// set the page title and right nav
-		$this->_set_variable('cp_page_title', $this->EE->lang->line('rules'));
-
-		return $this->_load_view('rules', $vars);
 	}
 	
 	public function settings()
 	{
-		if ( ! $this->EE->mustash_lib->can_access('settings'))
+		if ( ! ee()->mustash_lib->can_access('settings'))
 		{
 			show_error(lang('unauthorized_access'));
 		}
@@ -743,49 +1020,58 @@ class mustash_mcp {
 		if(isset($_POST['update_mustash_settings']))
 		{
 			// validate
-			if( $this->EE->input->post('license_number'))
+			if( ee()->input->post('license_number'))
 			{
 				// do update		
-				if($this->EE->mustash_lib->update_settings($_POST))
+				if(ee()->mustash_lib->update_settings($_POST))
 				{	
-					$this->EE->logger->log_action($this->EE->lang->line('log_settings_updated'));
-					$this->EE->session->set_flashdata('message_success', $this->EE->lang->line('settings_updated'));
-					$this->EE->functions->redirect($this->url_base.'settings');		
+					ee()->logger->log_action(ee()->lang->line('log_settings_updated'));
+
+					ee('CP/Alert')->makeInline('entries-form')
+								  ->asSuccess()
+								  ->withTitle(lang('success'))
+								  ->addToBody(lang('settings_updated'))
+								  ->defer();				
+
+					ee()->functions->redirect( ee('CP/URL', $this->url_base.'/settings', ee()->cp->get_url_state()) );
 					exit;			
 				}
 				else
 				{
-					$this->EE->session->set_flashdata('message_failure', $this->EE->lang->line('settings_update_fail'));
-					$this->EE->functions->redirect($this->url_base.'settings');	
+					ee('CP/Alert')->makeInline('entries-form')
+								  ->asWarning()
+								  ->withTitle(lang('warning'))
+								  ->addToBody(lang('settings_update_fail'))
+								  ->defer();	
+
+					ee()->functions->redirect( ee('CP/URL', $this->url_base.'/settings', ee()->cp->get_url_state()) );	
 					exit;					
 				}
 			}
 			else
 			{
-				$this->errors[] = lang('error_missing_license_number');
+				$this->errors['license_number'] = lang('error_missing_license_number');
 			}
 		}
 		
-		$this->_set_variable('cp_page_title', $this->EE->lang->line('stash_settings'));
-		$this->EE->cp->set_right_nav($this->EE->mustash_lib->settings_right_menu());
-		
 		$vars = array(
-			'settings' => $this->settings
+			'settings' 	=> $this->settings,
+			'form_url'	=> ee('CP/URL', $this->url_base.'/settings')
 		);
 
 		// decrypt API key
-		$vars['api_key'] = $this->EE->encrypt->decode($this->settings['api_key']);
+		$vars['api_key'] = ee()->encrypt->decode($this->settings['api_key']);
 
 		// API URL
-		$vars['api_url'] = $this->EE->config->config['site_url']
+		$vars['api_url'] = ee()->config->config['site_url']
 						  .'?ACT='
-						  .$this->EE->cp->fetch_action_id('Mustash', 'api')
+						  .ee()->cp->fetch_action_id('Mustash', 'api')
 						  .'&key='.$vars['api_key']
 						  .'&hook=[your hook here]';
 
-		$vars['api_url_prune'] = $this->EE->config->config['site_url']
+		$vars['api_url_prune'] = ee()->config->config['site_url']
 						  .'?ACT='
-						  .$this->EE->cp->fetch_action_id('Mustash', 'api')
+						  .ee()->cp->fetch_action_id('Mustash', 'api')
 						  .'&key='.$vars['api_key']
 						  .'&prune=1';
 
@@ -793,7 +1079,7 @@ class mustash_mcp {
 		//  Get member groups, excluding superadmin, guests, pending and banned
 		// --------------------------------------------------------
 
-		$query = $this->EE->db->select('group_id, group_title')
+		$query = ee()->db->select('group_id, group_title')
 		       ->from('member_groups')
 		       ->where_not_in('group_id', array(1, 2, 3, 4))
 		       ->order_by('group_title', 'asc')
@@ -804,27 +1090,47 @@ class mustash_mcp {
 		// --------------------------------------------------------
 		// Look for plugins
 		// --------------------------------------------------------
-		$plugins = $this->EE->mustash_lib->get_all_plugins();
+		$plugins = ee()->mustash_lib->get_all_plugins();
 
 		$vars['plugin_options'] = array();
 
 		foreach($plugins as $p)
 		{
-			$vars['plugin_options'][$p] = $this->EE->mustash_lib->plugin($p)->name;
+			$vars['plugin_options'][$p] = ee()->mustash_lib->plugin($p)->name;
 		}
 
 		// -------------------------------------
 		//  Load CSS and JS
 		// -------------------------------------
 
-		$this->EE->mustash_lib->load_assets(
+		ee()->mustash_lib->load_assets(
 			array(
 				'scripts/tagmanager.js',
 				'styles/tagmanager.css'
 			)
 		);
 
-		return $this->_load_view('settings', $vars);
+		ee()->cp->add_to_foot(
+			"<script>
+			$(document).ready(function() {
+			  $('.tm-input').tagsManager({
+			  	prefilled : '{$this->settings['api_hooks']}',
+			    blinkBGColor_1: '#FFFF9C',
+			    blinkBGColor_2: '#CDE69C',
+			    hiddenTagListName: 'api_hooks'
+			  });
+			});
+			</script>"
+		);
+
+		// -------------------------------------
+		//  Load view
+		// -------------------------------------
+		return $this->_load_view(
+			'mustash:settings', 
+			$vars, 
+			lang('stash_settings')
+		);
 	}
 
 
@@ -832,66 +1138,190 @@ class mustash_mcp {
   
 	public function rewrite()
 	{
-		if ( ! $this->EE->mustash_lib->can_access('settings'))
+		if ( ! ee()->mustash_lib->can_access('settings'))
 		{
 			show_error(lang('unauthorized_access'));
 		}
 
-		// Set title
-		$this->_set_variable('cp_page_title', $this->EE->lang->line('stash_rewrite_rules'));
-		$this->EE->cp->set_right_nav($this->EE->mustash_lib->settings_right_menu());
+		$vars = array(
+			'cache_path' => '[stash_static_basepath]',
+			'cache_url' => '[stash_static_url]'
+		);
 
-		if ( $this->EE->config->item('stash_static_basepath') && $this->EE->config->item('stash_static_url'))
+		// Get sites
+		$query = ee()->db->get('sites');
+		$vars['sites'] = $query->result();
+
+		if ( ee()->config->item('stash_static_basepath') && ee()->config->item('stash_static_url'))
 		{
 			// Get config items, tidy up for .htaccess
 			$vars = array(
-				'cache_path' => str_replace(' ', '\ ', rtrim($this->EE->config->item('stash_static_basepath'), ' \t./').'/'),
-		  		'cache_url'  => rtrim($this->EE->config->item('stash_static_url'), ' \t./').'/'
+				'cache_path' => str_replace(' ', '\ ', rtrim(ee()->config->item('stash_static_basepath'), ' \t./').'/'),
+		  		'cache_url'  => rtrim(ee()->config->item('stash_static_url'), ' \t./').'/'
 			);
-		  
-		  	// Get sites
-		  	$query = $this->EE->db->get('sites');
-		  	$vars['sites'] = $query->result();
-
-		  	return $this->_load_view('rewrite', $vars);
 		}
 		else
 		{
-			$this->errors[] = lang('error_missing_static_config');
-			return $this->_load_view('errors');
+			$this->errors['general'] = lang('error_missing_static_config');
 		}
+
+		// -------------------------------------
+		//  Load view
+		// -------------------------------------
+		return $this->_load_view(
+			'mustash:rewrite', 
+			$vars, 
+			lang('stash_rewrite_rules'),
+			array(  
+				ee('CP/URL', $this->url_base.'/settings')->compile() => lang('stash_settings') 
+			)
+		);
 	}
 
 
 	// --------------------------------------------------------------------
 
-	private function _load_view($view, $vars=array())
-	{
-		// set common view variables
+	private function _load_view($view, $vars=array(), $heading='', $breadcrumb=array())
+	{	
+
+		/* ----------------------------------------------------------------------------- 
+     	   override main header
+     	   ----------------------------------------------------------------------------- */
+
+		ee()->view->header = array(
+			'title' => lang('mustash_module_name'),
+			'form_url' => ee('CP/URL', $this->url_base),
+			'search_button_value' => lang('search_variables')
+		);
+
+		/* ----------------------------------------------------------------------------- 
+     	   Sidebar menu
+     	   ----------------------------------------------------------------------------- */
+
+		$sidebar = ee('CP/Sidebar')->make();
+		$nav = $sidebar->addHeader(lang('nav_stash_variables'), ee('CP/URL', $this->url_base));
+
+		// manually highlight this nav item for the following functions:
+		if ( in_array( debug_backtrace()[1]['function'], array('clear_cache_confirm', 'edit_variable') ))
+		{
+			$nav->isActive();
+		}
+
+		// let's see if the logged in user has permission to access the Mustash module
+		$pass = FALSE;
+		$stash_menu = array();
+
+		if (ee()->session->userdata('group_id') == 1) 
+		{
+			$pass = TRUE; // Superadmin
+		} 
+		else
+		{
+			if ($allowed_modules = array_keys(ee()->session->userdata('assigned_modules')))
+			{
+				$query = ee()->db->select('module_name')
+							 		  ->where_in('module_id', $allowed_modules)
+							 		  ->get('modules');
+
+				if ($query->num_rows() > 0)
+				{
+					foreach ($query->result_array() as $row)
+					{
+						if ($row['module_name'] == $this->class_name)
+						{
+							$pass = TRUE;
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		if ($pass)
+		{
+			ee()->load->library('mustash_lib');
+
+			$areas = array('bundles', 'rules', 'settings');
+
+			// only show those areas the member group has been granted access to
+			foreach ($areas as $area)
+			{
+				if ( ee()->mustash_lib->can_access($area))
+				{
+					$nav = $sidebar->addHeader( lang('nav_stash_'.$area), ee('CP/URL', $this->url_base. '/'. $area) );
+
+					// bundles
+					if ($area == 'bundles')
+					{
+						// add button
+						$nav->withButton(lang('new'), ee('CP/URL', $this->url_base. '/add_bundle'));
+
+						// highlight on sub-pages
+						if ( in_array( debug_backtrace()[1]['function'], array('add_bundle', 'edit_bundle') ))
+						{
+							$nav->isActive();
+						}
+					}
+					
+					// settings
+					if ($area == 'settings')
+					{
+						// add submenu
+						$nav_list = $nav->addBasicList();
+						$nav_list->addItem(lang('stash_rewrite_rules'), ee('CP/URL', $this->url_base . '/rewrite'));
+					}
+				}
+			}
+		}
+
+		/* ----------------------------------------------------------------------------- 
+     	   Render view
+     	   ----------------------------------------------------------------------------- */
+
+     	// set common view variables
 		$vars['url_base'] = $this->url_base;
-		$vars['query_base'] = $this->query_base;	
 		$vars['settings'] = $this->settings;
+
+		if ( ! isset($vars['cp_heading'])) 
+		{
+			$vars['cp_heading'] = $heading;
+		}
+
+		// add errors
+		if ( count($this->errors) > 0)
+		{
+			$alert = ee('CP/Alert')->makeInline('entries-form')
+						  ->asIssue()
+						  ->withTitle(lang('error'));	
+			foreach($this->errors as $msg) 
+			{
+				$alert->addToBody($msg);
+			}
+
+			$alert->now();
+		}
+
+		// add errors to view
 		$vars['errors'] = $this->errors;
-		$this->EE->cp->set_breadcrumb(BASE.AMP.'C=addons_modules'.AMP.'M=show_module_cp'.AMP.'module='.$this->mod_name, $this->EE->lang->line('mustash_module_name'));
 
-		// load the view
-		return $this->EE->load->view($view, $vars, TRUE);
-	}
+		// render body 
+		$v = ee('View')->make($view);
+		$body = $v->render($vars);
 
-	private function _set_variable($var, $value)
-	{
-        if (version_compare(APP_VER, '2.6', '>=')) 
-        {
-            $this->EE->view->$var = $value;
-        } 
-        else 
-        {
-            $this->EE->cp->set_variable($var, $value);
-        } 
+		// breadcrumb base
+		$breadcrumb_base = array(
+			ee('CP/URL', $this->url_base)->compile() => lang('mustash_module_name')
+		);
+		
+		return array(
+			'heading'  	 => $heading,
+		  	'body'       => $body,
+		  	'breadcrumb' => $breadcrumb_base + $breadcrumb,
+		);
 	}
 
 }
 // END CLASS
 
 /* End of file mcp.mustash.php */
-/* Location: ./system/expressionengine/third_party/mustash/mcp.mustash.php */
+/* Location: ./system/user/addons/mustash/mcp.mustash.php */

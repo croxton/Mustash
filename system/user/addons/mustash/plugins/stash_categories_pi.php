@@ -178,7 +178,7 @@ class Stash_categories_pi extends Mustash_plugin {
 	 */
 	private function _get_cat_groups()
 	{
-		$result = $this->EE->db->select('group_id, group_name')
+		$result = ee()->db->select('group_id, group_name')
 		       ->from('category_groups')
 		       ->where('site_id', $this->site_id)
 		       ->order_by('sort_order', 'asc')
@@ -200,7 +200,7 @@ class Stash_categories_pi extends Mustash_plugin {
 	 */
 	private function _get_cat($cat_id)
 	{
-		$result = $this->EE->db->where('cat_id', $cat_id)->get('categories');
+		$result = ee()->db->where('cat_id', $cat_id)->get('categories');
 
 		if ($result->num_rows() == 0) 
 		{

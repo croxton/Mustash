@@ -1,76 +1,72 @@
-<?php echo form_open($query_base.'clear_cache', array('id' => 'clear_cache_confirm'))?>
+<div class="box">
+					
+	<h1><?=$cp_heading?> <span class="req-title"><?=lang('required_fields')?></span></h1>
+
+	<?=form_open($form_url, array('class'=>'settings'))?>
+				
+		<fieldset class="col-group required">
+			<div class="setting-txt col w-8">
+				<h3><?php echo lang('clear_mode')?></h3>
+				<em><?php echo lang('clear_mode_help')?></em>
+			</div>
+			<div class="setting-field col w-8 last">
+
+				<label class="choice mr block chosen">
+					<input type="radio" name="scope" value="all" checked="checked"> <?php echo lang('clear_all_vars')?>
+				</label>
+
+				<label class="choice mr block ">
+					<input type="radio" name="scope" value="site"> <?php echo lang('clear_site_vars')?>
+				</label>
+
+				<label class="choice mr block ">
+					<input type="radio" name="scope" value="user"> <?php echo lang('clear_user_vars')?>
+				</label>
+			</div>
+		</fieldset>
+
+		<fieldset class="col-group">
+			<div class="setting-txt col w-8">
+				<h3><?php echo lang('clear_soft')?></h3>
+				<em><?php echo lang('clear_soft_help')?></em>
+			</div>
+			<div class="setting-field col w-8">
+				<label class="choice mr yes"><input type="radio" name="soft_delete" value="y"> yes</label>
+				<label class="choice chosen no"><input type="radio" name="soft_delete" value="n" checked="checked"> no</label>
+			</div>
+		</fieldset>
+
+		<fieldset class="col-group last">
+
+			<div class="setting-txt col w-8">
+				<h3><?php echo lang('clear_soft_period'); ?></h3>
+				<em><?php echo lang('clear_soft_period_help')?></em>
+			</div>
+
+			<div class="setting-field col w-8 last">
+				<?php 
+				$data = array(
+				  'name'        => 'invalidate',
+				  'id'          => 'invalidate',
+				  'value'       => $invalidate,
+				  'maxlength'   => '20',
+	              'size'        => '20',
+	              'style'       => 'width:50px;',
+				);
+				echo form_input($data);
+				?>
+				&nbsp;<?php echo lang('clear_soft_seconds'); ?>
+			</div>
+
+		</fieldset>
+
+		<fieldset class="form-ctrls">
+			<input class="btn" type="submit" value="<?php echo lang('delete_variables')?>" data-submit-text="<?php echo lang('delete_variables')?>" data-work-text="<?php echo lang('clearing_cache')?>">
+		</fieldset>
 	
-	<fieldset>
-		<legend><?php echo lang('clear_mode')?></legend>
-		<br>
-		<p>
-			<?php
-			$data = array(
-			  'name'        => 'scope',
-			  'id'          => 'all',
-			  'value'       => 'all',
-			  'checked'     => TRUE
-			);
-			echo form_radio($data);?>&nbsp;
-			<strong><?php echo lang('clear_all_vars')?></strong>
-		</p>
 
-		<p>
-			<?php
-			$data = array(
-			  'name'        => 'scope',
-			  'id'          => 'site',
-			  'value'       => 'site'
-			);
-			echo form_radio($data);?>&nbsp;
-			<strong><?php echo lang('clear_site_vars')?></strong>
-		</p>
+	<?=form_close()?>
 
-		<p>
-			<?php
-			$data = array(
-			  'name'        => 'scope',
-			  'id'          => 'user',
-			  'value'       => 'user'
-			);
-			echo form_radio($data);?>&nbsp;
-			<strong><?php echo lang('clear_user_vars')?></strong>
-		</p>
+</div>
 
-	</fieldset>
 
-	<br>
-
-	<fieldset>	
-		<legend><?php echo lang('clear_options')?></legend>
-
-		<br>
-
-		<p>
-			<?php echo form_checkbox('soft_delete', 'Y', true);?>&nbsp;
-			<strong><?php echo lang('clear_soft')?></strong>
-		</p>
-		<p>
-			<?php 
-			$data = array(
-			  'name'        => 'invalidate',
-			  'id'          => 'invalidate',
-			  'value'       => $invalidate,
-			  'maxlength'   => '20',
-              'size'        => '20',
-              'style'       => 'width:50px;',
-			);
-			echo form_input($data);
-			?>
-			&nbsp;seconds
-		</p>
-				<p class="stash_notes">
-			<?php echo lang('clear_soft_help')?>
-		</p>
-	</fieldset>
-
-	<br>
-
-	<p><?php echo form_submit('delete', lang('clear'), 'class="submit"')?></p>
-
-<?php echo form_close()?>

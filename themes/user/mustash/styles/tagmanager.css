@@ -6,26 +6,32 @@
   display: inline-block;
   border-radius: 3px;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 13px;
-  margin: 0 5px 5px 0;
-  padding: 4px;
+  margin: 5px 5px 5px 0;
+  padding: 4px 4px 5px 4px;
   text-decoration: none;
   transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;
   -moz-transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;
   -webkit-transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;
   vertical-align: middle;
+  line-height: 16px;
 }
+
+.tm-tag:focus, .tm-tag:hover {
+  background: #fff8da ! important;
+}
+
 .tm-tag .tm-tag-remove {
-  color: #000000;
+  color: #BC4848;
   font-weight: bold;
   margin-left: 4px;
-  opacity: 0.5;
+  opacity: 1;
   font-size: 16px;
+  text-decoration: none;
 }
 .tm-tag .tm-tag-remove:hover {
   color: #000000;
   text-decoration: none;
-  opacity: 0.4;
+  opacity: 1;
 }
 .tm-tag.tm-tag-warning {
   color: #945203;
@@ -87,11 +93,30 @@
   display: none;
 }
 input[type="text"].tm-input {
-  margin-bottom: 5px;
+  margin: 5px 0 5px 0;
+  width: 100% ! important;
 }
 .control-group.tm-group {
   margin-bottom: 5px;
 }
 .form-horizontal .control-group.tm-group {
   margin-bottom: 15px;
+}
+
+@media screen and (min-width:32em) {
+  input[type="text"].tm-input {
+    width: 50% ! important;
+  }
+}
+
+@media screen and (min-width:48em) {
+  input[type="text"].tm-input {
+    width: 100% ! important;
+  }
+}
+
+@media screen and (min-width:64em) {
+  input[type="text"].tm-input {
+    width: 50% ! important;
+  }
 }
