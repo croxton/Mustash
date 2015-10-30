@@ -47,7 +47,7 @@
 		<br>
 
 		<p>
-			<?php echo form_checkbox('soft_delete', 'Y', true);?>&nbsp;
+			<?php echo form_checkbox('soft_delete', 'Y', false);?>&nbsp;
 			<strong><?php echo lang('clear_soft')?></strong>
 		</p>
 		<p>
