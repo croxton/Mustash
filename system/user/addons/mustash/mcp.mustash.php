@@ -2,15 +2,13 @@
 
 use EllisLab\ExpressionEngine\Library\CP\Table;
 
-require_once PATH_THIRD . 'mustash/config.php';
-
- /**
+/**
  * Mustash - control panel class
  *
  * @package		Mustash
  * @author		Mark Croxton
  * @copyright	Copyright (c) 2015, hallmarkdesign
- * @link		http://hallmark-design.co.uk/code/mustash
+ * @link		https://github.com/croxton/Stash/wiki/Mustash
  * @since		1.0
  * @filesource 	./system/user/addons/mustash/mcp.mustash.php
  */
@@ -31,12 +29,11 @@ class mustash_mcp {
 
 		$this->settings = ee()->mustash_lib->get_settings();
 		$this->url_base = 'addons/settings/mustash';
-		ee()->mustash_lib->set_url_base($this->url_base);
 
 		// load local assets
 		ee()->mustash_lib->load_assets(
 			array(
-				'styles/mustash.css',
+				'mustash.css',
 			)
 		);	
 	}
@@ -990,10 +987,9 @@ class mustash_mcp {
 		// 
 		ee()->mustash_lib->load_assets(
 			array(
-				'scripts/jquery.dynoTable.js',
-				'scripts/jquery.chained.js',
-				'scripts/stash_rules.js'
-
+				'jquery.dynoTable.js',
+				'jquery.chained.js',
+				'stash_rules.js'
 			)
 		);	
 
@@ -1096,7 +1092,7 @@ class mustash_mcp {
 
 		foreach($plugins as $p)
 		{
-			$vars['plugin_options'][$p] = ee()->mustash_lib->plugin($p)->name;
+			$vars['plugin_options'][$p] = ee()->mustash_lib->plugin($p);
 		}
 
 		// -------------------------------------
@@ -1105,8 +1101,8 @@ class mustash_mcp {
 
 		ee()->mustash_lib->load_assets(
 			array(
-				'scripts/tagmanager.js',
-				'styles/tagmanager.css'
+				'tagmanager.js',
+				'tagmanager.css'
 			)
 		);
 
@@ -1189,7 +1185,7 @@ class mustash_mcp {
      	   ----------------------------------------------------------------------------- */
 
 		ee()->view->header = array(
-			'title' => lang('mustash_module_name'),
+			'title' => ee()->mustash_lib->mod_name,
 			'form_url' => ee('CP/URL', $this->url_base),
 			'search_button_value' => lang('search_variables')
 		);
@@ -1207,69 +1203,35 @@ class mustash_mcp {
 			$nav->isActive();
 		}
 
-		// let's see if the logged in user has permission to access the Mustash module
-		$pass = FALSE;
-		$stash_menu = array();
+		// member access to areas
+		$areas = array('bundles', 'rules', 'settings');
 
-		if (ee()->session->userdata('group_id') == 1) 
+		// only show those areas the member group has been granted access to
+		foreach ($areas as $area)
 		{
-			$pass = TRUE; // Superadmin
-		} 
-		else
-		{
-			if ($allowed_modules = array_keys(ee()->session->userdata('assigned_modules')))
+			if ( ee()->mustash_lib->can_access($area))
 			{
-				$query = ee()->db->select('module_name')
-							 		  ->where_in('module_id', $allowed_modules)
-							 		  ->get('modules');
+				$nav = $sidebar->addHeader( lang('nav_stash_'.$area), ee('CP/URL', $this->url_base. '/'. $area) );
 
-				if ($query->num_rows() > 0)
+				// bundles
+				if ($area == 'bundles')
 				{
-					foreach ($query->result_array() as $row)
+					// add button
+					$nav->withButton(lang('new'), ee('CP/URL', $this->url_base. '/add_bundle'));
+
+					// highlight on sub-pages
+					if ( in_array( debug_backtrace()[1]['function'], array('add_bundle', 'edit_bundle') ))
 					{
-						if ($row['module_name'] == $this->class_name)
-						{
-							$pass = TRUE;
-							break;
-						}
+						$nav->isActive();
 					}
 				}
-			}
-		}
-
-		if ($pass)
-		{
-			ee()->load->library('mustash_lib');
-
-			$areas = array('bundles', 'rules', 'settings');
-
-			// only show those areas the member group has been granted access to
-			foreach ($areas as $area)
-			{
-				if ( ee()->mustash_lib->can_access($area))
+				
+				// settings
+				if ($area == 'settings')
 				{
-					$nav = $sidebar->addHeader( lang('nav_stash_'.$area), ee('CP/URL', $this->url_base. '/'. $area) );
-
-					// bundles
-					if ($area == 'bundles')
-					{
-						// add button
-						$nav->withButton(lang('new'), ee('CP/URL', $this->url_base. '/add_bundle'));
-
-						// highlight on sub-pages
-						if ( in_array( debug_backtrace()[1]['function'], array('add_bundle', 'edit_bundle') ))
-						{
-							$nav->isActive();
-						}
-					}
-					
-					// settings
-					if ($area == 'settings')
-					{
-						// add submenu
-						$nav_list = $nav->addBasicList();
-						$nav_list->addItem(lang('stash_rewrite_rules'), ee('CP/URL', $this->url_base . '/rewrite'));
-					}
+					// add submenu
+					$nav_list = $nav->addBasicList();
+					$nav_list->addItem(lang('stash_rewrite_rules'), ee('CP/URL', $this->url_base . '/rewrite'));
 				}
 			}
 		}
@@ -1310,7 +1272,7 @@ class mustash_mcp {
 
 		// breadcrumb base
 		$breadcrumb_base = array(
-			ee('CP/URL', $this->url_base)->compile() => lang('mustash_module_name')
+			ee('CP/URL', $this->url_base)->compile() => ee()->mustash_lib->mod_name
 		);
 		
 		return array(

@@ -89,7 +89,7 @@ $lang = array(
 'list_limit' 					=> 'List limit',
 'list_limit_help' 				=> 'How many rows of results do you wish to display per page in the Variables and Bundles tables?',
 'date_format' 					=> 'Date format',
-'date_format_help' 				=> 'The <a href="http://expressionengine.com/user_guide/templates/date_variable_formatting.html#date-formatting-codes" target="_blank">date format</a> to use when displaying dates</a>.',
+'date_format_help' 				=> 'The <a href="https://docs.expressionengine.com/latest/templates/date_variable_formatting.html#date-formatting-codes" target="_blank">date format</a> to use when displaying dates</a>.',
 'global_config' 				=> 'Global Configuration',
 
 // variables
@@ -138,6 +138,7 @@ $lang = array(
 // Rules
 'rules' 						=> 'Stash cache-breaking rules',
 'add_rule' 						=> 'Add rule',
+'remove_rule' 					=> 'Remove rule',
 'need_help' 					=> 'Need help?',
 
 'rules' 						=> 'Rules',

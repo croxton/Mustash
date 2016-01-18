@@ -24,7 +24,7 @@ class Stash_api_pi extends Mustash_plugin {
 	 * @var 	string
 	 * @access 	public
 	 */
-	public $version = '1.0.0';
+	public $version = '2.0.0';
 
 	/**
 	 * Extension hook priority
@@ -35,12 +35,12 @@ class Stash_api_pi extends Mustash_plugin {
 	public $priority = '10';
 
 	/**
-	 * Extension hooks and associated markers
+	 * Required modules
 	 *
-	 * @var 	array
+	 * @var 	integer
 	 * @access 	protected
 	 */
-	protected $hooks = array();
+	protected $dependencies = array('Stash');
 
 	/**
 	 * Constructor
@@ -56,21 +56,31 @@ class Stash_api_pi extends Mustash_plugin {
 
 		if ($settings['api_hooks'])
 		{
-			$this->hooks = explode(',', $settings['api_hooks']);
+			$api_hooks = explode(',', $settings['api_hooks']);
+
+			foreach($api_hooks as $hook) 
+			{
+				$this->register_hook($hook);
+			}
 		}
 	}
 
 	/**
 	 * Flush the cache for a given hook
-	 * 
+	 *
+	 * @param  string
 	 * @return boolean
 	 */
-	public function run($hook)
+	public function run($api_hook)
 	{
-		if (in_array($hook, $this->hooks))
+		foreach ($this->hooks as $hook) 
 		{
-			return $this->flush_cache($hook);
+			if ($api_hook == $hook->name)
+			{
+				return $this->flush_cache($hook->name);
+			}
 		}
+
 		return FALSE;
 	}
 

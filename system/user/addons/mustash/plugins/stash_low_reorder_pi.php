@@ -24,7 +24,7 @@ class Stash_low_reorder_pi extends Mustash_plugin {
 	 * @var 	string
 	 * @access 	public
 	 */
-	public $version = '1.0.0';
+	public $version = '2.0.0';
 
 	/**
 	 * Extension hook priority
@@ -35,20 +35,12 @@ class Stash_low_reorder_pi extends Mustash_plugin {
 	public $priority = '10';
 
 	/**
-	 * Extension hooks
+	 * Required modules
 	 *
-	 * @var 	array
+	 * @var 	integer
 	 * @access 	protected
 	 */
-	protected $hooks = array(
-		'low_reorder_post_sort' => array(
-			'channel_id',
-			'channel_name',
-			'author_id',
-	    	'entry_id',
-	    	'url_title',
-		),
-	);
+	protected $dependencies = array('Low_reorder');
 
 	/**
 	 * Constructor
@@ -58,7 +50,23 @@ class Stash_low_reorder_pi extends Mustash_plugin {
 	public function __construct()
 	{
 		parent::__construct();
+
 		ee()->load->model('mustash_channel_data');
+
+		// markers
+		$markers = array(
+			'channel_id',
+			'channel_name',
+			'author_id',
+	    	'entry_id',
+	    	'url_title',
+	    	'year',
+	    	'month',
+	    	'day'
+		);
+
+		// add hook
+		$this->register_hook('low_reorder_post_sort', $markers);
 	}
 
 	/**
@@ -97,11 +105,14 @@ class Stash_low_reorder_pi extends Mustash_plugin {
 
 			// prep marker data
 			$markers = array(
+				'entry_id'		=> $entry_id,
 				'channel_id' 	=> $entry['channel_id'],
 				'channel_name'	=> $entry['channel_name'],
 				'author_id'		=> $entry['author_id'],
-			    'entry_id'		=> $entry_id,
-			    'url_title'		=> $entry['url_title']
+			    'url_title'		=> $entry['url_title'],
+			    'year'			=> $entry['year'],
+			    'month'			=> $entry['month'],
+			    'day'			=> $entry['day'],
 			);
 		
 			if ( ! in_array($entry['channel_id'], $channels_cleared))

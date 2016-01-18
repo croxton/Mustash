@@ -47,21 +47,18 @@
                     <?php if ( $p->short_name !== 'api') : ?>
                         <h4><?php echo $p->name ?></h4>
 
-                        <?php foreach($p->get_hooks() as $hook => $markers) : ?>
-
-                            <?php if ( is_array($markers)) : ?>
-                            <h5><?php echo stash_translate_hook_name($hook, $p->name) ?></h5>
+                        <?php foreach($p->get_hooks() as $hook) : ?>
+                            <?php $markers = $hook->get_markers(); ?>
+                            <h5><?php echo stash_translate_hook_name($hook->name, $p->name) ?></h5>
+                            <?php if ( count($markers) > 0) : ?>
                             <ul>
                                 <?php foreach($markers as $m): ?>
                                 <li><code>{<?php echo $m ?>}</code></li>
                                 <?php endforeach; ?>
                             </ul>
                             <?php else: ?>
-                            <h5><?php echo stash_translate_hook_name($markers, $p->name) ?></h5>
                             <p><?php echo lang('no_markers_defined');?></p>
                             <?php endif; ?>
-
-
 
                         <?php endforeach; ?>
                     <?php endif; ?>
@@ -113,9 +110,8 @@
                                     <?php if (count($p->get_hooks()) > 0) : ?>    
 
                                     <optgroup label="<?php echo $p->name?>">
-                                    <?php foreach($p->get_hooks() as $hook => $markers): ?>
-                                        <?php $hook = is_array($markers) ? $hook : $markers; ?>
-                                        <option value="<?php echo $p->short_name."--".$hook?>"<?php echo( ($rule['hook'] == $hook &&  $rule['plugin'] == $p->short_name) ? ' selected="selected"' : '');?>><?php echo stash_translate_hook_name($hook, $p->name)?></option>
+                                    <?php foreach($p->get_hooks() as $hook): ?>
+                                        <option value="<?php echo $p->short_name."--".$hook?>"<?php echo( ($rule['hook'] == $hook->name &&  $rule['plugin'] == $p->short_name) ? ' selected="selected"' : '');?>><?php echo stash_translate_hook_name($hook->name, $p->name)?></option>
                                     <?php endforeach; ?>
                                     </optgroup> 
 
@@ -133,8 +129,8 @@
 
                                         <?php 
                                             $hooks = array();
-                                            foreach($p->get_hooks() as $hook => $markers) :
-                                                $hooks[] = $p->short_name."--".( is_array($markers) ? $hook : $markers );
+                                            foreach($p->get_hooks() as $hook) :
+                                                $hooks[] = $p->short_name."--".$hook->name;
                                             endforeach;
                                             $hooks = implode(' ', $hooks);
                                         ?>
@@ -164,7 +160,7 @@
                         <td class="center">
                             <div class="toolbar-wrap">
                                 <ul class="toolbar">
-                                    <li class="remove"><a href="#" title="Clear cache" class="stash_remove_row"></a></li>
+                                    <li class="remove"><a href="#" title="<?php echo lang('remove_rule');?>" class="stash_remove_row"></a></li>
                                 </ul>                        
                             </div>
                         </td>
@@ -184,11 +180,9 @@
                                     <option value="NULL">-- Please select --</option>
 
                                     <?php foreach($plugins as $p): ?>
-
                                     <optgroup label="<?php echo $p->name?>">
-                                        <?php foreach($p->get_hooks() as $hook => $markers): ?>
-                                        <?php $hook = is_array($markers) ? $hook : $markers; ?>
-                                        <option value="<?php echo $p->short_name."--".$hook?>"><?php echo stash_translate_hook_name($hook, $p->name)?></option>
+                                        <?php foreach($p->get_hooks() as $hook): ?>
+                                        <option value="<?php echo $p->short_name."--".$hook->name?>"><?php echo stash_translate_hook_name($hook->name, $p->name)?></option>
                                         <?php endforeach; ?>
                                     </optgroup> 
                                     <?php endforeach; ?>
@@ -206,8 +200,8 @@
 
                                         <?php 
                                             $hooks = array();
-                                            foreach($p->get_hooks() as $hook => $markers) :
-                                                $hooks[] = $p->short_name."--".( is_array($markers) ? $hook : $markers );
+                                            foreach($p->get_hooks() as $hook) :
+                                                $hooks[] = $p->short_name."--".$hook->name;
                                             endforeach;
                                             $hooks = implode(' ', $hooks);
                                         ?>
@@ -239,7 +233,7 @@
                         <td class="center">
                             <div class="toolbar-wrap">
                                 <ul class="toolbar">
-                                    <li class="remove"><a href="#" title="Clear cache" class="stash_remove_row"></a></li>
+                                    <li class="remove"><a href="#" title="<?php echo lang('remove_rule');?>" class="stash_remove_row"></a></li>
                                 </ul>                        
                             </div>
                         </td>

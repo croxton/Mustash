@@ -29,7 +29,7 @@ class Stash_varnish_pi extends Mustash_plugin {
 	 * @var 	string
 	 * @access 	public
 	 */
-	public $version = '1.0.2';
+	public $version = '2.0.0';
 
 	/**
 	 * Extension hook priority
@@ -40,15 +40,12 @@ class Stash_varnish_pi extends Mustash_plugin {
 	public $priority = '10';
 
 	/**
-	 * Extension hooks and associated markers
+	 * Required modules
 	 *
-	 * @var 	array
+	 * @var 	integer
 	 * @access 	protected
 	 */
-	protected $hooks = array(
-		'stash_delete',
-		'stash_flush_cache'
-	);
+	protected $dependencies = array('Stash');
 
 	/**
 	 * Varnish port
@@ -91,7 +88,12 @@ class Stash_varnish_pi extends Mustash_plugin {
 	{
 		parent::__construct();	
 
-		// allow options to be overriden by config values
+		// Add hooks
+		$this->register_hook('@all');
+		$this->register_hook('stash_delete');
+		$this->register_hook('stash_flush_cache');
+
+		// Allow options to be overriden by config values
 		$this->port 			= ee()->config->item('varnish_port')   		? ee()->config->item('varnish_port')   : $this->port;
 		$this->header_domain 	= ee()->config->item('varnish_header_domain') 	? ee()->config->item('varnish_header_domain') : $this->header_domain;
 		$this->header_url 		= ee()->config->item('varnish_header_url') 	? ee()->config->item('varnish_header_url') : $this->header_url;
@@ -169,7 +171,7 @@ class Stash_varnish_pi extends Mustash_plugin {
 			// => cached items using the @URI pointer are most likely to represent cached pages
 			if ( $data['key_name'] 
 				 && $data['key_label'] 
-				 && ( strncmp($data['key_label'], '@URI:', 5) == 0 )
+				 && ( (strncmp($data['key_label'], '@URI:', 5) == 0) || $data['bundle_id'] == 3)
 			){
 				// parse out the uri
 				$uri = ee()->mustash_model->parse_uri_from_key($data['key_name']);

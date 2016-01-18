@@ -24,7 +24,7 @@ class Stash_forum_pi extends Mustash_plugin {
 	 * @var 	string
 	 * @access 	public
 	 */
-	public $version = '1.0.0';
+	public $version = '2.0.0';
 
 	/**
 	 * Extension hook priority
@@ -35,19 +35,12 @@ class Stash_forum_pi extends Mustash_plugin {
 	public $priority = '10';
 
 	/**
-	 * Extension hooks
+	 * Required modules
 	 *
-	 * @var 	array
+	 * @var 	integer
 	 * @access 	protected
 	 */
-	protected $hooks = array(
-		'forum_submit_post_end' => array(
-			'topic_id', 
-			'forum_id',
-			'board_id',
- 			'author_id'
-		),
-	);
+	protected $dependencies = array('Forum');
 
 	/**
 	 * Constructor
@@ -57,6 +50,17 @@ class Stash_forum_pi extends Mustash_plugin {
 	public function __construct()
 	{
 		parent::__construct();
+
+		// markers
+		$markers = array(
+			'topic_id', 
+			'forum_id',
+			'board_id',
+ 			'author_id'
+		);
+
+		// add hook
+		$this->register_hook('forum_submit_post_end', $markers);
 	}
 
 	/**

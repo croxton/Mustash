@@ -1,6 +1,16 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-require_once PATH_THIRD . 'mustash/libraries/Mustash_plugin.php';
+// inlcude plugin class
+if ( ! class_exists('Mustash_plugin'))
+{
+	require_once PATH_THIRD . 'mustash/libraries/Mustash_plugin.php';
+}
+
+// include base class
+if ( ! class_exists('Mustash_base'))
+{
+	require_once(PATH_THIRD . 'mustash/base.mustash.php');
+}
 
 /**
  * Mustash Library
@@ -9,18 +19,12 @@ require_once PATH_THIRD . 'mustash/libraries/Mustash_plugin.php';
  *
  * @package		Mustash
  * @author		Mark Croxton
- * @copyright	Copyright (c) 2014, hallmarkdesign
- * @link		http://hallmark-design.co.uk/code/mustash
+ * @copyright	Copyright (c) 2015, hallmarkdesign
+ * @link		https://github.com/croxton/Stash/wiki/Mustash
  * @since		1.0
  * @filesource 	./system/user/addons/mustash/Mustash_lib.php
  */
-class Mustash_lib {
-
-	/**
-	 * Preceeds URLs 
-	 * @var mixed
-	 */
-	private $url_base = FALSE;
+class Mustash_lib extends Mustash_base {
 
 	/**
 	 * plugins
@@ -30,17 +34,11 @@ class Mustash_lib {
 
 	public function __construct()
 	{
+		parent::__construct();
+
 		ee()->load->model('mustash_settings_model', 'mustash_settings');
 		ee()->load->model('mustash_model');
 		$this->settings = $this->get_settings();
-
-		// config
-		$path = dirname(dirname(realpath(__FILE__)));
-		include $path.'/config.php';
-		$this->name = $config['name'];
-		$this->version = $config['version'];
-		$this->mod_name = $config['mod_url_name'];
-		$this->ext_class_name = $config['ext_class_name'];
 	}
 	
 	public function get_settings()
@@ -68,8 +66,6 @@ class Mustash_lib {
 			// (re)install any that have been selected
 			if ( isset($data['enabled_plugins']) && is_array($data['enabled_plugins']) )
 			{
-				// get hooks for each plugin
-				$hooks = array();
 				foreach($data['enabled_plugins'] as $p)
 				{
 					$this->plugin($p)->install();
@@ -94,7 +90,7 @@ class Mustash_lib {
     	if( ! isset(self::$plugins[$plugin]))
 		{	
 			// load and instantiate the plugin if it doesn't exist already
-			require_once PATH_THIRD. $this->mod_name . '/plugins/' . $plugin .'.php';
+			require_once PATH_THIRD. $this->package . '/plugins/' . $plugin .'.php';
 			self::$plugins[$plugin] = new $plugin;
 		}
 		// check that we have an object that extends Mustash_plugin
@@ -115,7 +111,7 @@ class Mustash_lib {
   	public function get_all_plugins()
   	{
   		ee()->load->helper('directory');
-		$plugins = directory_map(PATH_THIRD . $this->mod_name . '/plugins', 1);
+		$plugins = directory_map(PATH_THIRD . $this->package . '/plugins', 1);
 
 		# PHP 5.3+ only
 		#$plugins = preg_filter('/^(stash_[a-zA-Z0-9_-]+_pi)'.EXT.'$/i', '$1', $plugins);
@@ -141,45 +137,7 @@ class Mustash_lib {
 
   		return $plugins;
   	}
-	
-	/**
-	 * Sets up the right menu options
-	 * @return multitype:string
-	 */
-	public function variables_right_menu()
-	{
-		$menu = array(
-			'variables' => $this->url_base.'variables',
-			'clear_cache' => $this->url_base.'clear_cache_confirm',
-		);
-		return $menu;
-	}
 
-	/**
-	 * Sets up the right menu options
-	 * @return multitype:string
-	 */
-	public function bundles_right_menu()
-	{
-		$menu = array(
-			'bundles' => $this->url_base.'bundles',
-			'add_bundle' => $this->url_base.'add_bundle',
-		);
-		return $menu;
-	}
-
-	/**
-	 * Sets up the right menu options
-	 * @return multitype:string
-	 */
-	public function settings_right_menu()
-	{
-		$menu = array(
-			'stash_settings' => $this->url_base.'settings',
-			'stash_rewrite_rules' => $this->url_base.'rewrite',
-		);
-		return $menu;
-	}
 
 	/**
 	 * Wrapper that runs all the tests to ensure system stability
@@ -195,23 +153,6 @@ class Mustash_lib {
 		return $errors;
 	}
 	
-	/**
-	 * Wrapper to handle CP URL creation
-	 * @param string $method
-	 */
-	public function _create_url($method)
-	{
-		return $this->url_base.$method;
-	}
-
-	/**
-	 * Creates the value for $url_base
-	 * @param string $url_base
-	 */
-	public function set_url_base($url_base)
-	{
-		$this->url_base = $url_base;
-	}
 
 	public function scope_select_options($label='filter_by_scope', $label_value='')
 	{
@@ -242,64 +183,24 @@ class Mustash_lib {
 	}
 
 	/**
-	 * Load assets: extra JS and CSS
+	 * Load extra JS / CSS
 	 *
 	 * @access     public
+	 * @param      array
 	 * @return     void
 	 */
-	public function load_assets($assets=array())
+	public function load_assets($assets)
 	{
-		// -------------------------------------
-		//  Define placeholder
-		// -------------------------------------
-
-		$header = array();
-		$footer = array();
-
-		// -------------------------------------
-		//  Loop through assets
-		// -------------------------------------
-
-		$asset_url = ((defined('URL_THIRD_THEMES'))
-		           ? URL_THIRD_THEMES
-		           : ee()->config->item('theme_folder_url') . 'third_party/')
-		           . $this->mod_name . '/';
-
 		foreach ($assets AS $file)
 		{
-			// location on server
-			$file_url = $asset_url.$file.'?v='.$this->version;
-
 			if (substr($file, -3) == 'css')
 			{
-				$header[] = '<link charset="utf-8" type="text/css" href="'.$file_url.'" rel="stylesheet" media="screen" />';
+				ee()->cp->load_package_css(substr($file, 0, -4));
 			}
 			elseif (substr($file, -2) == 'js')
 			{
-				$footer[] = '<script charset="utf-8" type="text/javascript" src="'.$file_url.'"></script>';
+				ee()->cp->load_package_js(substr($file, 0, -3));
 			}
-		}
-
-		// -------------------------------------
-		//  Add combined assets to header
-		// -------------------------------------
-
-		if ($header)
-		{
-			ee()->cp->add_to_head(
-				NL."<!-- {$this->mod_name} assets -->".NL.
-				implode(NL, $header).
-				NL."<!-- / {$this->mod_name} assets -->".NL
-			);
-		}
-
-		if ($footer)
-		{
-			ee()->cp->add_to_foot(
-				NL."<!-- {$this->mod_name} assets -->".NL.
-				implode(NL, $footer).
-				NL."<!-- / {$this->mod_name} assets -->".NL
-			);
 		}
 	}
 

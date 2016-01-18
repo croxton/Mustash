@@ -1,29 +1,27 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-require_once PATH_THIRD . 'mustash/config.php';
+// include base class
+if ( ! class_exists('Mustash_base'))
+{
+	require_once(PATH_THIRD . 'mustash/base.mustash.php');
+}
 
  /**
  * Mustash extension class
  *
  * @package		Mustash
  * @author		Mark Croxton
- * @copyright	Copyright (c) 2014, hallmarkdesign
- * @link		http://hallmark-design.co.uk/code/mustash
+ * @copyright	Copyright (c) 2015, hallmarkdesign
+ * @link		https://github.com/croxton/Stash/wiki/Mustash
  * @since		1.0
  * @filesource 	./system/user/addons/mustash/ext.mustash.php
  */
-class Mustash_ext 
-{
+class Mustash_ext extends Mustash_base {
+
 	// --------------------------------------------------------------------
 	// PROPERTIES
 	// --------------------------------------------------------------------
- 	
-	public $name			= MUSTASH_NAME;
-	public $class_name 		= MUSTASH_CLASS_NAME;
-	public $version			= MUSTASH_VERSION;
-	public $description		= MUSTASH_DESC;
-	public $docs_url		= MUSTASH_DOCS_URL;
-	public $mod_name		= MUSTASH_MOD_URL;
+
 
 	/**
 	 * Settings
@@ -32,22 +30,6 @@ class Mustash_ext
 	 * @access     public
 	 */
 	public $settings = array();
-
-	/**
-	 * Do settings exist?
-	 *
-	 * @var        string	y|n
-	 * @access     public
-	 */
-	public $settings_exist	= 'y';
-
-	/**
-	 * Extension hooks
-	 *
-	 * @var        array
-	 * @access     private
-	 */
-	private $hooks = array('cp_menu_array');
 
 	/**
 	 * Plugin hooks
@@ -64,16 +46,21 @@ class Mustash_ext
 	 */
 	public function __construct($settings = array())
 	{
-		$this->ext_class_name = MUSTASH_CLASS_NAME . '_ext';
-		#ee()->load->library('mustash_lib');
-		ee()->lang->loadfile('mustash');
-		$this->query_base = 'C=addons_modules'.AMP.'M=show_module_cp'.AMP.'module='.$this->mod_name.AMP.'method=';
+		// Call base constructor
+		parent::__construct();
+
+		// required extension properties
+		$this->name				= $this->mod_name;
+		$this->version			= $this->mod_version;
+		$this->description		= $this->mod_description;
+		$this->docs_url			= $this->mod_docs_url;
+		$this->settings_exist	= 'y';
 
 		// populate static plugin hooks array on first instantiation of this class
 		if ( empty(self::$plugin_hooks))
 		{
 			$query = ee()->db->from('extensions')
-								  ->where('class', $this->ext_class_name)
+								  ->where('class', __CLASS__)
 								  ->where('enabled', 'y')
 								  ->order_by('priority', 'asc')
 								  ->get();
@@ -136,10 +123,7 @@ class Mustash_ext
 	 */
 	public function activate_extension()
 	{
-		foreach ($this->hooks AS $hook)
-		{
-			$this->_add_hook($hook);
-		}
+		
 	}
 
 	// ------------------------------------------------------
@@ -154,30 +138,6 @@ class Mustash_ext
 		ee()->db->where('class', __CLASS__);
 		ee()->db->delete('extensions');
 	}
-
-	// ------------------------------------------------------
-
-	 /**
-	 * Add extension hook
-	 *
-	 * @access     private
-	 * @param      string
-	 * @return     void
-	 */
-	private function _add_hook($name)
-	{
-		ee()->db->insert('extensions',
-			array(
-				'class'    => __CLASS__,
-				'method'   => $name,
-				'hook'     => $name,
-				'settings' => '',
-				'priority' => 10,
-				'version'  => $this->version,
-				'enabled'  => 'y'
-			)
-		);
-	}
 	
 	// ------------------------------------------------------
 
@@ -189,110 +149,14 @@ class Mustash_ext
 	 */
 	public function update_extension($current = '')
 	{
-		if ($current == '' OR (version_compare($current, $this->version) === 0))
+		if ($current == '' OR (version_compare($current, $this->mod_version) === 0))
 		{
 			return FALSE; // up to date
 		}
 
 		// update table row with current version
 		ee()->db->where('class', __CLASS__);
-		ee()->db->update('extensions', array('version' => $this->version));
+		ee()->db->update('extensions', array('version' => $this->mod_version));
 	}
 	
-
-	// ------------------------------------------------------
-	
-	/**
-	 * Seetings form
-	 *
-	 * Redirect to Control Panel module settings method
-	 *
-	 * @access     public
-	 * @param      array
-	 * @return     array
-	 */
-	public function settings_form()
-	{
-		ee()->functions->redirect(BASE.AMP.$this->query_base.'settings');
-	}
-
-	// ------------------------------------------------------
-	
-	/**
-	 * Method for cp_menu_array hook
-	 *
-	 * Add a Stash menu to the main menu bar
-	 *
-	 * @access     public
-	 * @param      array
-	 * @return     array
-	 */
-	public function cp_menu_array($menu)
-	{
-        // get the latest version of $menu if it's been altered by other extensions on this hook
-        if (isset(ee()->extensions->last_call) && ee()->extensions->last_call)
-        {
-            $menu = ee()->extensions->last_call;
-        } 
-
-		// let's see if the logged in user has permission to access the Mustash module
-		$pass = FALSE;
-
-		if (ee()->session->userdata('group_id') == 1) 
-		{
-			$pass = TRUE; // Superadmin
-		} 
-		else
-		{
-			if ($allowed_modules = array_keys(ee()->session->userdata('assigned_modules')))
-			{
-				$query = ee()->db->select('module_name')
-							 		  ->where_in('module_id', $allowed_modules)
-							 		  ->get('modules');
-
-				if ($query->num_rows() > 0)
-				{
-					foreach ($query->result_array() as $row)
-					{
-						if ($row['module_name'] == $this->class_name)
-						{
-							$pass = TRUE;
-							break;
-						}
-					}
-				}
-			}
-		}
-
-		if ($pass)
-		{
-			ee()->load->library('mustash_lib');
-
-			$mcp_uri = BASE.AMP.'C=addons_modules'.AMP.'M=show_module_cp'.AMP.'module=mustash'.AMP.'method=';
-
-			$stash_menu = array(
-				'stash_variables' => $mcp_uri.'variables'
-			);
-
-			$areas = array('bundles', 'rules', 'settings');
-
-			// only show those areas the member group has been granted access to
-			foreach ($areas as $area)
-			{
-				if ( ee()->mustash_lib->can_access($area))
-				{
-					$stash_menu += array(
-						'stash_'.$area => $mcp_uri.$area
-					);
-				}
-			}
-
-			$menu += array(
-				'stash_menu' => $stash_menu
-			);
-		}
-
-		return $menu;
-	}
-
 }

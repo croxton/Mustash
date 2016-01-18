@@ -7,8 +7,8 @@ require_once PATH_THIRD . 'stash/models/stash_model.php';
  *
  * @package		Mustash
  * @author		Mark Croxton
- * @copyright	Copyright (c) 2014, hallmarkdesign
- * @link		http://hallmark-design.co.uk/code/mustash/
+ * @copyright	Copyright (c) 2015, hallmarkdesign
+ * @link		https://github.com/croxton/Stash/wiki/Mustash/
  * @since		1.0
  * @filesource 	./system/user/addons/mustash/models/mustash_model.php
  */
@@ -581,6 +581,37 @@ class Mustash_model extends Stash_model {
 			return TRUE;
 		}
 		return FALSE;
+	}
+
+	/*
+	================================================================
+	Utility
+	================================================================
+	*/
+
+	/**
+	 * Get installed modules
+	 *
+	 * @param array $rules
+	 * @return array
+	 */
+	function get_modules()
+	{	
+		$result = array();
+
+		$query = $this->db->select('module_name')->from('modules')->get();
+
+		if ($query->num_rows() > 0)
+		{
+			$modules = $query->result_array();
+
+			foreach ($modules as $m)
+			{
+				$result[] = $m['module_name'];
+			}
+		}
+
+		return $result;
 	}
 
 }

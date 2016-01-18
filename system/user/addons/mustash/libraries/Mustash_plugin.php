@@ -1,5 +1,17 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
+// include base class
+if ( ! class_exists('Mustash_base'))
+{
+	require_once(PATH_THIRD . 'mustash/base.mustash.php');
+}
+
+// include hook class
+if ( ! class_exists('Mustash_hook'))
+{
+	require_once(PATH_THIRD . 'mustash/libraries/Mustash_hook.php');
+}
+
 /**
  * Mustash_plugin class
  *
@@ -7,29 +19,29 @@
  *
  * @package		Mustash
  * @author		Mark Croxton
- * @copyright	Copyright (c) 2014, hallmarkdesign
- * @link		http://hallmark-design.co.uk/code/mustash
+ * @copyright	Copyright (c) 2015, hallmarkdesign
+ * @link		https://github.com/croxton/Stash/wiki/Mustash
  * @since		1.0
  * @filesource 	./system/user/addons/mustash/libraries/Mustash_plugin.php
  */
-abstract class Mustash_plugin {
+abstract class Mustash_plugin extends Mustash_base {
 	
 	public $name, $short_name, $version, $priority;
 	protected $hooks = array();
 	protected $groups = array();
+	protected $dependencies = array();
 	protected $ext_class_name;
-	protected $ext_version = MUSTASH_VERSION;
-	protected $site_id;
+	protected $ext_version;
 
 	public function __construct() 
 	{
-		$this->ext_class_name = MUSTASH_CLASS_NAME . '_ext';
+		parent::__construct();
+
+		$this->ext_class_name = $this->mod_name . '_ext';
 
 		# PHP 5.3+ only
 		#$this->short_name = preg_filter('/^Stash_([a-zA-Z0-9_-]+)_pi$/i', '$1', get_class($this));
 		$this->short_name = preg_replace('/^Stash_([a-zA-Z0-9_-]+)_pi$/i', '$1', get_class($this));
-
-		$this->site_id = ee()->config->item('site_id');
 	}
 
 	/**
@@ -39,15 +51,11 @@ abstract class Mustash_plugin {
 	 */
 	public function install()
 	{
-		foreach ($this->hooks AS $hook => $markers)
+		foreach ($this->hooks AS $hook)
 		{
-			if ( ! is_array($markers))
+			if ( $hook->name !== '@all' && $hook->has_trigger())
 			{
-				$hook = $markers;
-			}
-			if ( $hook !== '@all')
-			{
-				$this->add_hook($hook);
+				$this->add_hook($hook->name);
 			}
 		}
 	}
@@ -59,25 +67,74 @@ abstract class Mustash_plugin {
 	 */
 	public function uninstall()
 	{
-		foreach ($this->hooks AS $hook => $markers)
+		foreach ($this->hooks AS $hook)
 		{
-			if ( ! is_array($markers))
+			if ( $hook->name !== '@all' && $hook->has_trigger())
 			{
-				$hook = $markers;
+				$this->remove_hook($hook->name);
 			}
-			$this->remove_hook($hook);
 		}
 	}
 
 	/**
-	 * get the extension hooks this plugin implements
+	 * check that any first or third-party modules that this plugin relies on actually exist
+	 *
+	 * @access     public
+	 * @return     bool
+	 */
+	public function dependencies_are_installed()
+	{
+		if ( empty($this->dependencies))
+		{
+			return TRUE;
+		}
+
+		$installed_modules = ee()->mustash_model->get_modules();
+
+		foreach ($this->dependencies as $module) 
+		{
+			if ( ! in_array($module, $installed_modules))
+			{
+				return FALSE;
+			}
+		}
+
+		return TRUE;
+	}
+
+	/**
+	 * Register a Mustash_hook with this plugin
+	 *
+	 * @access     protected
+	 * @param      string $name The hook name
+	 * @param      array $markers An array of markers to parse in rules attached to the hook
+	 * @param      boolean $visible Visible to the end-user who creates rules
+	 * @param      boolean $trigger Can be triggered by editing events in EE
+	 * @return     void
+	 */
+	protected function register_hook($name, $markers = array(), $visible = TRUE, $trigger = TRUE)
+	{
+		$this->hooks[] = new Mustash_hook($name, $markers, $visible, $trigger);
+	}
+
+	/**
+	 * get an array of *visible* extension hooks this plugin implements
 	 *
 	 * @access     public
 	 * @return     array
 	 */
 	public function get_hooks() 
 	{
-		return $this->hooks;
+		$visible_hooks = array();
+
+		foreach($this->hooks AS $hook) 
+		{
+			if ($hook->is_visible()) 
+			{
+				$visible_hooks[] = $hook;
+			}
+		}
+		return $visible_hooks;
 	}
 
 	/**
@@ -192,8 +249,6 @@ abstract class Mustash_plugin {
 	 */
 	protected function flush_cache($hook, $group_id=FALSE, $markers=array())
 	{
-		// @TODO: check this is a valid hook for this plugin?
-
 		// get rules for this hook
 		if ($rules = $this->get_rules($hook, $markers))
 		{
@@ -253,7 +308,7 @@ abstract class Mustash_plugin {
 		return ee()->stash_model->delete_matching_keys(
 			$bundle_id, 
 			$session_id, 
-			is_null($site_id) ? ee()->config->item('site_id') : $site_id, 
+			is_null($site_id) ? $this->site_id : $site_id, 
 			$regex,
 			$invalidation_period
 		);

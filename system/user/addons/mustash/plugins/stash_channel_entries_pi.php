@@ -1,4 +1,5 @@
-<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+<?php 
+if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 /**
  * Stash_channel_entries_pi
@@ -24,7 +25,7 @@ class Stash_channel_entries_pi extends Mustash_plugin {
 	 * @var 	string
 	 * @access 	public
 	 */
-	public $version = '1.0.0';
+	public $version = '2.0.0';
 
 	/**
 	 * Extension hook priority
@@ -35,39 +36,12 @@ class Stash_channel_entries_pi extends Mustash_plugin {
 	public $priority = '10';
 
 	/**
-	 * Extension hooks and associated markers
+	 * Required modules
 	 *
-	 * @var 	array
+	 * @var 	integer
 	 * @access 	protected
 	 */
-	protected $hooks = array(
-
-		'@all' => array(
-			'channel_id',
-			'channel_name',
-		    'entry_id',
-		),	
-
-		'entry_submission_end' => array(
-			'channel_id',
-			'channel_name',
-			'author_id',
-		    'entry_id',
-		    'url_title',
-		),
-		'update_multi_entries_loop' => array(
-			'channel_id',
-			'channel_name',
-			'author_id',
-			'entry_id',
-			'url_title',
-		),
-		'delete_entries_loop' => array(
-			'channel_id',
-			'channel_name',
-		    'entry_id',
-		)
-	);
+	protected $dependencies = array('Channel');
 
 	/**
 	 * Constructor
@@ -77,7 +51,27 @@ class Stash_channel_entries_pi extends Mustash_plugin {
 	public function __construct()
 	{
 		parent::__construct();	
+
+		// load model
 		ee()->load->model('mustash_channel_data');
+
+		// markers shared by all hooks
+		$shared_markers = array(
+			'channel_id',
+			'channel_name',
+			'author_id',
+		    'entry_id',
+		    'url_title',
+		    'year',
+		    'month',
+		    'day',
+		);
+
+		// add hooks
+		$this->register_hook('@all', $shared_markers);
+		$this->register_hook('after_channel_entry_insert', $shared_markers);
+		$this->register_hook('after_channel_entry_update', $shared_markers);
+		$this->register_hook('after_channel_entry_delete', $shared_markers);
 	}
 
 	/**
@@ -98,116 +92,117 @@ class Stash_channel_entries_pi extends Mustash_plugin {
 	*/
 
 	/**
-	 * Hook: entry_submission_end
+	 * Hook: after_channel_entry_insert
 	 *
 	 * @access	public
-	 * @param	integer
-	 * @param	array
+	 * @param	EllisLab\ExpressionEngine\Model\Channel\ChannelEntry
 	 * @param	array
 	 * @return	void
 	 */
-	public function entry_submission_end($entry_id, $meta, $data)
+	public function after_channel_entry_insert($entry_obj, $data)
 	{
-		/* $meta:
-		Array
-		(
-		    [channel_id] => 7
-		    [author_id] => 2
-		    [site_id] => 1
-		    [ip_address] => 192.168.0.6
-		    [title] => Mike Swangard
-		    [url_title] => mike-swangard
-		    [entry_date] => 1363267553
-		    [edit_date] => 20130327162354
-		    [versioning_enabled] => y
-		    [year] => 2013
-		    [month] => 03
-		    [day] => 14
-		    [expiration_date] => 0
-		    [comment_expiration_date] => 0
-		    [sticky] => n
-		    [status] => open
-		    [allow_comments] => y
-		)
-		*/
-
 		// prep marker data
-		$markers = array(
-			'channel_id' 	=> $meta['channel_id'],
-			'channel_name'	=> ee()->mustash_channel_data->get_channel_name($meta['channel_id']),
-			'author_id'		=> ee()->mustash_channel_data->get_author_id($entry_id),
-		    'entry_id'		=> $entry_id,
-		    'url_title'		=> $meta['url_title']
-		);
+		$markers = $this->_prep_markers($data);
 
 		// flush cache
-		$this->flush_cache(__FUNCTION__, $meta['channel_id'], $markers);
+		$this->flush_cache(__FUNCTION__, $data['channel_id'], $markers);
 	}
 
 	/**
-	 * Hook: update_multi_entries_loop
+	 * Hook: after_channel_entry_update
 	 *
 	 * @access	public
-	 * @param	integer
+	 * @param	EllisLab\ExpressionEngine\Model\Channel\ChannelEntry
+	 * @param	array 
 	 * @param	array
 	 * @return	void
 	 */
-	public function update_multi_entries_loop($entry_id, $data)
+	public function after_channel_entry_update($entry_obj, $data, $data_original)
+	{
+		// we want to flush variables associated with the values of this entry *before* it was edited 
+		$data = array_merge($data, $data_original);
+
+		// prep marker data
+		$markers = $this->_prep_markers($data);
+
+		// flush cache
+		$this->flush_cache(__FUNCTION__, $data['channel_id'], $markers);
+	}
+
+	/**
+	 * Hook: after_channel_entry_delete
+	 *
+	 * @access	public
+	 * @param	EllisLab\ExpressionEngine\Model\Channel\ChannelEntry
+	 * @param	array
+	 * @return	void
+	 */
+	public function after_channel_entry_delete($entry_obj, $entry_data)
+	{
+		// prep marker data
+		$markers = $this->_prep_markers($entry_data);
+
+		// flush cache
+		$this->flush_cache(__FUNCTION__, $entry_data['channel_id'], $markers);
+	}
+
+	/**
+	 * Prep markers for rule parsing
+	 *
+	 * @access	private
+	 * @param	array
+	 * @return	array
+	 */
+	private function _prep_markers($data) 
 	{
 		/* $data:
 		Array
 		(
-		    [title] => Blog entry 1
-		    [url_title] => blog-entry-1
-		    [entry_date] => 1357733074
-		    [edit_date] => 20130605171636
+		    [entry_id] => 1
+		    [site_id] => 1
+		    [channel_id] => 1
+		    [author_id] => 1
+		    [forum_topic_id] => 
+		    [ip_address] => ::1
+		    [title] => Test blog post
+		    [url_title] => test-blog-post
 		    [status] => open
-		    [sticky] => n
-		    [allow_comments] => y
-		    [year] => 2013
-		    [month] => 01
-		    [day] => 09
+		    [versioning_enabled] => 1
+		    [view_count_one] => 
+		    [view_count_two] => 
+		    [view_count_three] => 
+		    [view_count_four] => 
+		    [allow_comments] => 1
+		    [sticky] => 
+		    [entry_date] => 1446052920
+		    [year] => 2015
+		    [month] => 10
+		    [day] => 28
+		    [expiration_date] => 0
+		    [comment_expiration_date] => 0
+		    [edit_date] => 
+		    [recent_comment_date] => 
+		    [comment_total] => 
+		    [in_hook] => Array
+		        (
+		        )
+
+		    [field_id_1] => ​Some content
 		)
 		*/
-
-		// get missing channel data
-		$channel = ee()->mustash_channel_data->get_channel($entry_id);
-
+	
 		// prep marker data
 		$markers = array(
-			'channel_id' 	=> $channel['channel_id'],
-			'channel_name'	=> $channel['channel_name'],
-			'author_id'		=> ee()->mustash_channel_data->get_author_id($entry_id),
-		    'entry_id'		=> $entry_id,
-		    'url_title'		=> $data['url_title']
+			'channel_id' 	=> $data['channel_id'],
+			'channel_name'	=> ee()->mustash_channel_data->get_channel_name($data['channel_id']),
+			'author_id'		=> $data['author_id'],
+		    'entry_id'		=> $data['entry_id'],
+		    'url_title'		=> $data['url_title'],
+		    'year'			=> $data['year'],
+		    'month'			=> $data['month'],
+		    'day'			=> $data['day'],
 		);
 
-		// flush cache
-		$this->flush_cache(__FUNCTION__, $channel['channel_id'], $markers);
-	}
-
-	/**
-	 * Hook: delete_entries_loop
-	 *
-	 * @access	public
-	 * @param	integer
-	 * @param	integer
-	 * @return	void
-	 */
-	public function delete_entries_loop($entry_id, $channel_id)
-	{
-		/*
-		As this hook is called AFTER the entry has been deleted, 
-		it is impossible to get any other data about the entry :(
-		*/
-
-		$markers = array(
-			'channel_id' 	=> $channel_id,
-			'channel_name'	=> ee()->mustash_channel_data->get_channel_name($channel_id),
-		    'entry_id'		=> $entry_id
-		);
-
-		// flush cache
-		$this->flush_cache(__FUNCTION__, $channel_id, $markers);
+		return $markers;
 	}
 }

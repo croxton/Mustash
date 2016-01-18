@@ -24,7 +24,7 @@ class Stash_member_model_pi extends Mustash_plugin {
 	 * @var 	string
 	 * @access 	public
 	 */
-	public $version = '1.0.0';
+	public $version = '2.0.0';
 
 	/**
 	 * Extension hook priority
@@ -35,46 +35,12 @@ class Stash_member_model_pi extends Mustash_plugin {
 	public $priority = '10';
 
 	/**
-	 * Extension hooks
+	 * Required modules
 	 *
-	 * @var 	array
+	 * @var 	integer
 	 * @access 	protected
 	 */
-	protected $hooks = array(
-
-		'@all' => array(
-			'member_id',
-			'screen_name',
-			'username',
-			'group_id',
-			'group_title'
-		),	
-
-		 // EE 2.6.0+
-		'member_create_end' => array(
-			'member_id',
-			'screen_name',
-			'username',
-			'group_id',
-			'group_title'
-		),
-		// EE 2.6.0+
-		'member_update_end' => array(
-			'member_id',
-			'screen_name',
-			'username',
-			'group_id',
-			'group_title'
-		),
-		 // EE 2.4.0+
-		'member_delete' => array(
-			'member_id',
-			'screen_name',
-			'username',
-			'group_id',
-			'group_title'
-		),
-	);
+	protected $dependencies = array('Member');
 
 	/**
 	 * Constructor
@@ -84,7 +50,23 @@ class Stash_member_model_pi extends Mustash_plugin {
 	public function __construct()
 	{
 		parent::__construct();
+
 		ee()->load->model('member_model');
+
+		// markers shared by all hooks
+		$shared_markers = array(
+			'member_id',
+			'screen_name',
+			'username',
+			'group_id',
+			'group_title'
+		);
+
+		// add hooks
+		$this->register_hook('@all', $shared_markers);
+		$this->register_hook('after_member_insert', $shared_markers);
+		$this->register_hook('after_member_update', $shared_markers);
+		$this->register_hook('after_member_delete', $shared_markers);
 	}
 
 	/**
@@ -113,21 +95,9 @@ class Stash_member_model_pi extends Mustash_plugin {
 	 * @param	array
 	 * @return	void
 	 */
-	public function member_create_end($member_id, $data, $cdata)
-	{		
-		// get the group title
-		$group = ee()->member_model->get_member_groups(array(), array('group_id' => $data['group_id']), 1)->row();
-
-		// prep marker data
-		$markers = array(
-			'member_id' 	=> $member_id,
-			'screen_name'	=> $data['screen_name'],
-			'username'		=> $data['username'],
-		    'group_id'		=> $data['group_id'],
-		    'group_title'	=> $group->group_title
-		);
-
-		// flush cache
+	public function after_member_insert($member_obj, $data)
+	{	
+		$markers = $this->_prep_markers($data);
 		$this->flush_cache(__FUNCTION__, $data['group_id'], $markers);
 	}
 
@@ -140,25 +110,14 @@ class Stash_member_model_pi extends Mustash_plugin {
 	 * @param	array
 	 * @return	void
 	 */
-	public function member_update_end($member_id, $data)
+	public function after_member_update($member_obj, $data, $data_original)
 	{
-		// hydrate the member 
-		$member = ee()->member_model->get_member_data($member_id, array('group_id', 'screen_name', 'username'))->row();
+		// we want to flush variables associated with the values of this member account *before* it was edited
+		$data = array_merge($data, $data_original);
 
-		// get the group title
-		$group = ee()->member_model->get_member_groups(array(), array('group_id' => $member->group_id), 1)->row();
-
-		// prep marker data
-		$markers = array(
-			'member_id' 	=> $member_id,
-			'screen_name'	=> $member->screen_name,
-			'username'		=> $member->username,
-		    'group_id'		=> $member->group_id,
-		    'group_title'	=> $group->group_title
-		);
-
-		// flush cache
-		$this->flush_cache(__FUNCTION__, $member->group_id, $markers);
+		// prep markers and flush cache
+		$markers = $this->_prep_markers($data);
+		$this->flush_cache(__FUNCTION__, $data['group_id'], $markers);
 	}
 
 	/**
@@ -168,30 +127,38 @@ class Stash_member_model_pi extends Mustash_plugin {
 	 * @param	array
 	 * @return	array
 	 */
-	public function member_delete($member_ids)
+	public function after_member_delete($member_obj, $data)
 	{
-		foreach($member_ids as $member_id)
-		{
-			// hydrate the member 
-			$member = ee()->member_model->get_member_data($member_id, array('group_id', 'screen_name', 'username'))->row();
+		$markers = $this->_prep_markers($data);
+		$this->flush_cache(__FUNCTION__, $data['group_id'], $markers);
+	}
 
-			// get their group title
-			$group = ee()->member_model->get_member_groups(array(), array('group_id' => $member->group_id), 1)->row();
-
-			// prep marker data
-			$markers = array(
-				'member_id' 	=> $member_id,
-				'screen_name'	=> $member->screen_name,
-				'username'		=> $member->username,
-			    'group_id'		=> $member->group_id,
-			    'group_title'	=> $group->group_title
-			);
-
-			// flush cache
-			$this->flush_cache(__FUNCTION__, $member->group_id, $markers);
-		}
-
-		return $member_ids;
+	/**
+	 * Prep markers for rule parsing
+	 *
+	 * @access	private
+	 * @param	array
+	 * @return	array
+	 */
+	private function _prep_markers($data) 
+	{
+		/* $data:
+		Array
+		(
+		    [member_id] => 5
+		    [group_id] => 1
+		    [username] => jsmith
+		    [screen_name] => John Smith
+			...
+		)
+		*/
+		return array(
+			'member_id' 	=> $data['member_id'],
+			'screen_name'	=> $data['screen_name'],
+			'username'		=> $data['username'],
+		    'group_id'		=> $data['group_id'],
+		    'group_title'	=> $this->_get_member_group_title($data['group_id']),
+		);
 	}
 
 	/*
@@ -220,6 +187,30 @@ class Stash_member_model_pi extends Mustash_plugin {
 		}
 		return $result->result_array();
 	}
+
+	/**
+	 * Get a member group title
+	 *
+	 * @access	private
+	 * @param	integer
+	 * @return	string
+	 */
+	private function _get_member_group_title($group_id)
+	{
+		$result = ee()->db->select('group_title')
+		       ->from('member_groups')
+		       ->where('group_id', $group_id)
+		       ->where('site_id', $this->site_id)
+		       ->get();
+
+		if ($result->num_rows() == 0) 
+		{
+			return FALSE;
+		}
+
+		$row = $result->row(); 
+		return $row->group_title;
+    }
 }
 
 

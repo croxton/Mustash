@@ -4,6 +4,11 @@
  * Stash_comments_pi
  * Mustash cache-breaking plugin
  *
+ * @TODO
+ * -----
+ * 3rd November 2015: when Ellislab get around to rewriting the Comment module (front-end) to use the new model, 
+ * this plugin will need to be rewritten to use the new hooks
+ *
  * @package		Mustash
  * @author  	Mark Croxton
  */
@@ -24,7 +29,7 @@ class Stash_comments_pi extends Mustash_plugin {
 	 * @var 	string
 	 * @access 	public
 	 */
-	public $version = '1.0.0';
+	public $version = '2.0.0';
 
 	/**
 	 * Extension hook priority
@@ -35,43 +40,12 @@ class Stash_comments_pi extends Mustash_plugin {
 	public $priority = '10';
 
 	/**
-	 * Extension hooks and associated markers
+	 * Required modules
 	 *
-	 * @var 	array
+	 * @var 	integer
 	 * @access 	protected
 	 */
-	protected $hooks = array(
-
-		'@all' => array(
-			'channel_id',
-			'channel_name',
-			'author_id',
-		    'entry_id',
-		    'url_title'
-		),	
-
-		'insert_comment_end' => array(
-			'channel_id',
-			'channel_name',
-			'author_id',
-		    'entry_id',
-		    'url_title'
-		),
-		'delete_comment_additional' => array(
-			'channel_id',
-			'channel_name',
-			'author_id',
-		    'entry_id',
-		    'url_title'
-		),
-		'update_comment_additional' => array(
-			'channel_id',
-			'channel_name',
-			'author_id',
-		    'entry_id',
-		    'url_title'
-		),
-	);
+	protected $dependencies = array('Comment');
 
 	/**
 	 * Constructor
@@ -81,7 +55,22 @@ class Stash_comments_pi extends Mustash_plugin {
 	public function __construct()
 	{
 		parent::__construct();
+
 		ee()->load->model('mustash_channel_data');
+
+		// markers shared by all hooks
+		$shared_markers = array(
+			'channel_id',
+			'channel_name',
+			'author_id',
+		    'entry_id',
+		    'url_title'
+		);
+
+		// add hooks
+		$this->register_hook('after_comment_insert', $shared_markers);
+		$this->register_hook('after_comment_update', $shared_markers);
+		$this->register_hook('after_comment_delete', $shared_markers);
 	}
 
 	/**
@@ -102,71 +91,90 @@ class Stash_comments_pi extends Mustash_plugin {
 	*/
 
 	/**
-	 * Hook: insert_comment_end
+	 * Hook: after_comment_insert
 	 *
 	 * @access	public
-	 * @param	array
-	 * @param	string (y|n)
-	 * @param	integer
-	 * @return	void
-	 */
-	public function insert_comment_end($data, $comment_moderate, $comment_id)
-	{
-		// if the comment is going to be moderated, the cached output won't change 
-		if ($comment_moderate == 'n')
-		{
-			// prep marker data
-			$markers = array(
-				'channel_id' 	=> $data['channel_id'],
-				'channel_name'	=> ee()->mustash_channel_data->get_channel_name($data['channel_id']),
-				'author_id'		=> isset($data['author_id']) ? $data['author_id'] : '0',
-			    'entry_id'		=> $data['entry_id'],
-			    'url_title'		=> ee()->mustash_channel_data->get_url_title($data['entry_id']),
-			);
-
-			// flush cache
-			$this->flush_cache(__FUNCTION__, $data['channel_id'], $markers);
-		}	
-	}
-
-	/**
-	 * Hook: delete_comment_additional
-	 *
-	 * @access	public
-	 * @param	array Comment IDs being deleted
-	 * @return	void
-	 */
-	public function delete_comment_additional($comment_ids)
-	{
-		foreach($comment_ids as $id)
-		{
-			// get comment data
-			$comment = ee()->mustash_channel_data->get_comment($id);
-
-			// prep marker data
-			$markers = array(
-				'channel_id' 	=> $comment['channel_id'],
-				'channel_name'	=> $comment['channel_name'],
-				'author_id'		=> $comment['author_id'],
-			    'entry_id'		=> $comment['entry_id'],
-			    'url_title'		=> ee()->mustash_channel_data->get_url_title($comment['entry_id']),
-			);
-
-			// flush cache for each comment
-			$this->flush_cache(__FUNCTION__, $comment['channel_id'], $markers);
-		}
-	}
-
-	/**
-	 * Hook: update_comment_additional
-	 *
-	 * @access	public
-	 * @param	integer
+	 * @param	EllisLab\ExpressionEngine\Model\Comment\Comment
 	 * @param	array
 	 * @return	void
 	 */
-	public function update_comment_additional($comment_id, $data)
+	public function after_comment_insert($comment_obj, $data)
 	{
+		// prep marker data
+		$markers = $this->_prep_markers($data);
+
+		// flush cache
+		$this->flush_cache(__FUNCTION__, $data['channel_id'], $markers);
+	}
+
+	/**
+	 * Hook: after_comment_update
+	 *
+	 * @access	public
+	 * @param	EllisLab\ExpressionEngine\Model\Comment\Comment
+	 * @param	array
+	 * @return	void
+	 */
+	public function after_comment_update($comment_obj, $data, $data_original)
+	{
+		// we want to flush variables associated with the values of this entry *before* it was edited 
+		$data = array_merge($data, $data_original);
+
+		// prep marker data
+		$markers = $this->_prep_markers($data);
+
+		// flush cache
+		$this->flush_cache(__FUNCTION__, $data['channel_id'], $markers);
+	}
+
+
+	/**
+	 * Hook: after_comment_delete
+	 *
+	 * @access	public
+	 * @param	EllisLab\ExpressionEngine\Model\Comment\Comment
+	 * @param	array
+	 * @return	void
+	 */
+	public function after_comment_delete($comment_obj, $data)
+	{
+		// prep marker data
+		$markers = $this->_prep_markers($data);
+
+		// flush cache
+		$this->flush_cache(__FUNCTION__, $data['channel_id'], $markers);
+	}
+
+
+	/**
+	 * Prep markers for rule parsing
+	 *
+	 * @access	private
+	 * @param	array
+	 * @return	array
+	 */
+	private function _prep_markers($data) 
+	{
+		/* $data:
+		Array
+		(
+		    [comment_id] => 1
+		    [site_id] => 1
+		    [entry_id] => 1
+		    [channel_id] => 1
+		    [author_id] => 5
+		    [status] => o
+		    [name] => mark
+		    [email] => mcroxton@gmail.com
+		    [url] => 
+		    [location] => 
+		    [ip_address] => ::1
+		    [comment_date] => 1447172097
+		    [edit_date] => 
+		    [comment] => asdada
+		)
+		*/
+	
 		// prep marker data
 		$markers = array(
 			'channel_id' 	=> $data['channel_id'],
@@ -176,8 +184,6 @@ class Stash_comments_pi extends Mustash_plugin {
 		    'url_title'		=> ee()->mustash_channel_data->get_url_title($data['entry_id']),
 		);
 
-		// flush cache
-		$this->flush_cache(__FUNCTION__, $data['channel_id'], $markers);	
+		return $markers;
 	}
-
 }

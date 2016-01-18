@@ -24,7 +24,7 @@ class Stash_low_vars_pi extends Mustash_plugin {
 	 * @var 	string
 	 * @access 	public
 	 */
-	public $version = '1.0.0';
+	public $version = '2.0.0';
 
 	/**
 	 * Extension hook priority
@@ -35,16 +35,12 @@ class Stash_low_vars_pi extends Mustash_plugin {
 	public $priority = '10';
 
 	/**
-	 * Extension hooks
+	 * Required modules
 	 *
-	 * @var 	array
+	 * @var 	integer
 	 * @access 	protected
 	 */
-	protected $hooks = array(
-		'@all',	
-		'low_variables_post_save',
-		'low_variables_delete'
-	);
+	protected $dependencies = array('Low_variables');
 
 	/**
 	 * Constructor
@@ -54,6 +50,11 @@ class Stash_low_vars_pi extends Mustash_plugin {
 	public function __construct()
 	{
 		parent::__construct();
+
+		// add hooks
+		$this->register_hook('@all');
+		$this->register_hook('low_variables_post_save');
+		$this->register_hook('low_variables_delete');
 	}
 
 	/**

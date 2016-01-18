@@ -5,8 +5,8 @@
  *
  * @package		Mustash
  * @author		Mark Croxton
- * @copyright	Copyright (c) 2014, hallmarkdesign
- * @link		http://hallmark-design.co.uk/code/mustash
+ * @copyright	Copyright (c) 2015, hallmarkdesign
+ * @link		https://github.com/croxton/Stash/wiki/Mustash
  * @since		1.0
  * @filesource 	./system/user/addons/mustash/Mustash_api.php
  */

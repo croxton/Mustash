@@ -104,15 +104,24 @@
 		</div>
 		<div class="setting-field col w-8">
 		<?php $index= 0; ?>
-		<?php foreach($plugin_options AS $plugin => $name): ?>
+		<?php foreach($plugin_options AS $plugin => $p): ?>
 			<?php ++$index; ?>
 			<label class="choice block">
-			<?php echo form_checkbox(array(
-						'name' 	  => 'enabled_plugins[]', 
-						'id'   	  => 'enabled_plugins_'.$index, 
-						'value'	  => $plugin, 
-						'checked' => (@in_array($plugin, $settings['enabled_plugins'])),
-					)) . NBS . $name; ?>
+			<?php
+				$checkbox_config = array(
+					'name' 	  => 'enabled_plugins[]', 
+					'id'   	  => 'enabled_plugins_'.$index, 
+					'value'	  => $plugin, 
+					'checked' => (@in_array($plugin, $settings['enabled_plugins'])),
+				);
+				if (FALSE == $p->dependencies_are_installed())
+				{
+					$checkbox_config = array_merge($checkbox_config, array(
+						'disabled' => 'disabled',
+						'checked' => FALSE
+					));
+				}
+			echo form_checkbox($checkbox_config) . NBS . $p->name; ?>
 			</label>
 			<?php endforeach; ?>
 		</div>

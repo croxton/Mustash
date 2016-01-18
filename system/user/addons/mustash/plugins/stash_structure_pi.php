@@ -24,7 +24,7 @@ class Stash_structure_pi extends Mustash_plugin {
 	 * @var 	string
 	 * @access 	public
 	 */
-	public $version = '1.0.0';
+	public $version = '2.0.0';
 
 	/**
 	 * Extension hook priority
@@ -35,14 +35,12 @@ class Stash_structure_pi extends Mustash_plugin {
 	public $priority = '10';
 
 	/**
-	 * Extension hooks
+	 * Required modules
 	 *
-	 * @var 	array
+	 * @var 	integer
 	 * @access 	protected
 	 */
-	protected $hooks = array(
-		'structure_reorder_end'
-	);
+	protected $dependencies = array('Structure');
 
 	/**
 	 * Constructor
@@ -52,6 +50,9 @@ class Stash_structure_pi extends Mustash_plugin {
 	public function __construct()
 	{
 		parent::__construct();
+
+		// add hook
+		$this->register_hook('structure_reorder_end');
 	}
 
 	/**

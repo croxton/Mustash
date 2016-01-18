@@ -1,12 +1,11 @@
 <?php
-require_once PATH_THIRD . 'mustash/config.php';
-
 return array(
-      'author'      => MUSTASH_AUTHOR,
-      'author_url'  => MUSTASH_AUTHOR_URL,
-      'name'        => MUSTASH_NAME,
-      'description' => MUSTASH_DESC,
-      'version'     => MUSTASH_VERSION,
-      'namespace'   => MUSTASH_CLASS_NAME,
+      'author'         => 'Mark Croxton, Hallmark Design',
+      'author_url'     => 'http://hallmark-design.co.uk',
+      'docs_url'       => 'https://github.com/croxton/Stash/wiki/Mustash',
+      'name'           => 'Mustash',
+      'description'    => 'Manage Stash variables and cache-breaking rules.',
+      'version'        => '2.0.0',
+      'namespace'      => 'Croxton\Mustash',
       'settings_exist' => TRUE,
 );

@@ -24,7 +24,7 @@ class Stash_categories_pi extends Mustash_plugin {
 	 * @var 	string
 	 * @access 	public
 	 */
-	public $version = '1.0.1';
+	public $version = '2.0.0';
 
 	/**
 	 * Extension hook priority
@@ -35,37 +35,20 @@ class Stash_categories_pi extends Mustash_plugin {
 	public $priority = '10';
 
 	/**
-	 * Extension hooks
+	 * Required modules
 	 *
-	 * @var 	array
+	 * @var 	integer
 	 * @access 	protected
 	 */
-	protected $hooks = array(
-		'@all' => array(
-			'cat_id',
-			'cat_url_title',
-			'parent_id',
-			'group_id'
-		),	
-		'category_save'=> array(
-			'cat_id',
-			'cat_url_title',
-			'parent_id',
-			'group_id'
-		),
-		'category_delete'=> array(
-			'cat_id',
-			'cat_url_title',
-			'parent_id',
-			'group_id'
-		),
-		'category_reorder'=> array(
-			'cat_id',
-			'cat_url_title',
-			'parent_id',
-			'group_id'
-		),
-	);
+	protected $dependencies = array('Channel');
+
+	/**
+	 * Category reorder event
+	 *
+	 * @var 	boolean
+	 * @access 	private
+	 */
+	private static $reorder = FALSE;
 
 	/**
 	 * Constructor
@@ -75,6 +58,24 @@ class Stash_categories_pi extends Mustash_plugin {
 	public function __construct()
 	{
 		parent::__construct();
+
+		// markers shared by all hooks
+		$shared_markers = array(
+			'cat_id',
+			'cat_url_title',
+			'parent_id',
+			'group_id',
+			'group_name',
+		);
+
+		// add hooks
+		$this->register_hook('@all', $shared_markers);
+		$this->register_hook('after_category_insert', $shared_markers);
+		$this->register_hook('after_category_update', $shared_markers);
+		$this->register_hook('after_category_delete', $shared_markers);
+
+		// fake end-user hook, called on category update
+		$this->register_hook('after_category_reorder', $shared_markers, TRUE, FALSE);
 	}
 
 	/**
@@ -95,73 +96,113 @@ class Stash_categories_pi extends Mustash_plugin {
 	*/
 
 	/**
-	 * Hook: category_save
+	 * Hook: after_category_insert
 	 *
 	 * @access	public
-	 * @param	integer category id
-	 * @param	array category data
+	 * @param	object 
+	 * @param	array
 	 * @return	void
 	 */
-	public function category_save($cat_id, $data)
+	public function after_category_insert($cat_obj, $data)
 	{
-		// prep markers
-		$markers = array(
-			'cat_id' 		=> $cat_id,
-			'cat_url_title' => $data['cat_url_title'],
-			'parent_id'		=> $data['parent_id'],
-			'group_id'		=> $data['group_id'],
-		);
-
+		$markers = $this->_prep_markers($data);
 		$this->flush_cache(__FUNCTION__, $data['group_id'], $markers);
 	}
 
 	/**
-	 * Hook: category_delete
+	 * Hook: after_category_update
 	 *
 	 * @access	public
-	 * @param	array category ids
+	 * @param	object 
+	 * @param	array
+	 * @param	array
 	 * @return	void
 	 */
-	public function category_delete($cat_ids)
+	public function after_category_update($cat_obj, $data, $data_original)
 	{
-		foreach($cat_ids as $cat_id)
+		if (isset($data_original['cat_order']))
 		{
-			// hydrate the category
-			$cat = $this->_get_cat($cat_id);
+			// the category tree has been reordered
+			// => trigger our 'after_category_reorder' hook
+			$this->after_category_reorder($data);
+		}
+		else
+		{
+			// a single category was edited
 
-			// prep markers
-			$markers = array(
-				'cat_id' 		=> $cat_id,
-				'cat_url_title' => $cat->cat_url_title,
-				'parent_id'		=> $cat->parent_id,
-				'group_id'		=> $cat->group_id,
-			);
+			// we want to flush variables associated with the values of this category *before* it was edited
+			$data = array_merge($data, $data_original);
 
-			$this->flush_cache(__FUNCTION__, $cat->group_id, $markers);
+			// prep markers and flush cache
+			$markers = $this->_prep_markers($data);
+			$this->flush_cache(__FUNCTION__, $data['group_id'], $markers);
 		}
 	}
 
 	/**
-	 * Hook: category_reorder
+	 * Hook: after_category_reorder
 	 *
 	 * @access	public
-	 * @param	integer category id
+	 * @param	array
 	 * @return	void
 	 */
-	public function category_reorder($cat_id)
+	public function after_category_reorder($data)
 	{
-		// hydrate the category
-		$cat = $this->_get_cat($cat_id);
+		if (FALSE == self::$reorder) 
+		{
+			// only run once for a reorder
+			self::$reorder = TRUE;
 
-		// prep markers
-		$markers = array(
-			'cat_id' 		=> $cat_id,
-			'cat_url_title' => $cat->cat_url_title,
-			'parent_id'		=> $cat->parent_id,
-			'group_id'		=> $cat->group_id,
+			$markers = $this->_prep_markers($data);
+			$this->flush_cache(__FUNCTION__, $data['group_id'], $markers);
+		}
+	}
+
+	/**
+	 * Hook: after_category_delete
+	 *
+	 * @access	public
+	 * @param	object 
+	 * @param	array
+	 * @return	void
+	 */
+	public function after_category_delete($cat_obj, $data)
+	{
+		$markers = $this->_prep_markers($data);
+		$this->flush_cache(__FUNCTION__, $data['group_id'], $markers);
+	}
+
+	/**
+	 * Prep markers for rule parsing
+	 *
+	 * @access	private
+	 * @param	array
+	 * @return	array
+	 */
+	private function _prep_markers($data) 
+	{
+		/* $data:
+		Array
+		(
+		    [cat_id] => 4
+		    [site_id] => 1
+		    [group_id] => 1
+		    [parent_id] => 0
+		    [cat_name] => test2
+		    [cat_url_title] => test
+		    [cat_description] => 
+		    [cat_image] => 
+		    [cat_order] => 1
+		    [cat_image_select] => none
+		)
+		*/
+		return array(
+			'cat_id' 		=> $data['cat_id'],
+			'cat_url_title' => $data['cat_url_title'],
+			'parent_id'		=> $data['parent_id'],
+			'group_id'		=> $data['group_id'],
+			'group_name'	=> $this->_get_cat_group_name($data['group_id']),
 		);
-
-		$this->flush_cache(__FUNCTION__, $cat->group_id, $markers);
 	}
 
 	/*
@@ -193,21 +234,27 @@ class Stash_categories_pi extends Mustash_plugin {
     }
 
     /**
-	 * Hydrate a category
+	 * Get a category group name
 	 *
 	 * @access	private
+	 * @param	integer
 	 * @return	string
 	 */
-	private function _get_cat($cat_id)
+	private function _get_cat_group_name($group_id)
 	{
-		$result = ee()->db->where('cat_id', $cat_id)->get('categories');
+		$result = ee()->db->select('group_name')
+		       ->from('category_groups')
+		       ->where('group_id', $group_id)
+		       ->where('site_id', $this->site_id)
+		       ->get();
 
 		if ($result->num_rows() == 0) 
 		{
 			return FALSE;
 		}
 
-		return $result->row();
+		$row = $result->row(); 
+		return $row->group_name;
     }
 
 }
