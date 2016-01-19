@@ -17,10 +17,9 @@ Mustash is an ExpressionEngine control panel module for managing cached [Stash](
 
 
 ### Installation
-1. Install and configure [Stash](https://github.com/croxton/Stash/wiki/Installing-%26-upgrading) (version 2.3.8 or later is required)
-2. Upload the system/expressionengine/third_party/mustash folder to ./system/expressionengine/third_party/
-3. Upload the themes/third_party/mustash folder to ./themes/third_party/
-4. In the CP, navigate to Add-ons > Modules and click the 'Install' link for the Mustash module
+1. Install and configure [Stash](https://github.com/croxton/Stash/wiki/Installing-%26-upgrading) (version 3.0.0 or later is required)
+2. Upload the system/user/addons/mustash folder to ./system/user/addons/
+3. In the CP, navigate to the Add-on Manager and click the 'Install' link for the Mustash module
 
 
-Copyright (c) 2014 Hallmark Design http://hallmark-design.co.uk
+Copyright (c) 2016 Hallmark Design http://hallmark-design.co.uk
