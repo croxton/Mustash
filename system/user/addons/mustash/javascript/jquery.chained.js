@@ -46,12 +46,13 @@
                         }                        
                     });
                 
-                    /* If we have only the default value disable select. */
+                    /* If we have only the default value disable select.
                     if (1 == $("option", self).size() && ($(self).val() === "" || $(self).val() === "NULL")) {
                         $(self).attr("disabled", "disabled");
                     } else {
                         $(self).removeAttr("disabled");
                     }
+                    */
                     $(self).trigger("initChained");
                 });
                 
