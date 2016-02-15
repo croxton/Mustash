@@ -13,7 +13,7 @@
 
 	<input type="hidden" value="yes" name="update_mustash_settings">
 
-	<fieldset class="col-group<?php if (array_key_exists('license_number', $errors)) : ?> invalid<? endif;?> required">
+	<fieldset class="col-group<?php if (array_key_exists('license_number', $errors)) : ?> invalid<?php endif;?> required">
 
 		<div class="setting-txt col w-8">
 			<h3><?php echo lang('license_number')?></h3>
@@ -22,7 +22,7 @@
 
 		<div class="setting-field col w-8 last">
 			<?php echo form_input('license_number', $settings['license_number'], 'id="license_number"'); ?>
-			<?php if (array_key_exists('license_number', $errors)) : ?><em class="ee-form-error-message"><?php echo $errors['license_number'];?></em><? endif;?>
+			<?php if (array_key_exists('license_number', $errors)) : ?><em class="ee-form-error-message"><?php echo $errors['license_number'];?></em><?php endif;?>
 		</div>
 	</fieldset>
 
