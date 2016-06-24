@@ -5,24 +5,24 @@
 				<a class="btn tn action" href="<?php echo $add_bundle_url ?>"><?php echo lang('add_bundle'); ?></a>
 			</fieldset>
 			<h1>
-				<?=$cp_heading?>
+				<?php echo $cp_heading?>
 			</h1>
-			<?=ee('CP/Alert')->getAllInlines()?>
+			<?php echo ee('CP/Alert')->getAllInlines()?>
 
 			<?php echo $table; ?>
-			<?=$pagination?>
+			<?php echo $pagination?>
 
 			<?php if ($total > 0) : ?>
 			<fieldset class="tbl-bulk-act hidden">
 				<select name="bulk_action">
-					<option value="">-- <?=lang('with_selected')?> --</option>
-					<option value="remove" data-confirm-trigger="selected" rel="modal-confirm-remove-entry"><?=lang('remove')?></option>
+					<option value="">-- <?php echo lang('with_selected')?> --</option>
+					<option value="remove" data-confirm-trigger="selected" rel="modal-confirm-remove-entry"><?php echo lang('remove')?></option>
 				</select>
-				<button class="btn submit" data-conditional-modal="confirm-trigger"><?=lang('submit')?></button>
+				<button class="btn submit" data-conditional-modal="confirm-trigger"><?php echo lang('submit')?></button>
 			</fieldset>
 			<?php endif; ?>
 
-		<?=form_close()?>
+		<?php echo form_close()?>
 	</div>
 </div>
 

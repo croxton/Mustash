@@ -1,6 +1,6 @@
 <div class="box">
 
-	<h1><?=$cp_heading?> <span class="req-title"><?=lang('required_fields')?></span></h1>
+	<h1><?php echo $cp_heading?> <span class="req-title"><?php echo lang('required_fields')?></span></h1>
 
 	<?php echo form_open($form_url, array('class'=>'settings'))?>
 

@@ -3,7 +3,7 @@
 
 		<h1><?php echo $cp_heading; ?></h1>
 
-		<?=ee('CP/Alert')->getAllInlines()?>
+		<?php echo ee('CP/Alert')->getAllInlines()?>
 
 		<div class="stash_footnote" aria-expanded="true">
 

@@ -1,34 +1,43 @@
 <div class="box">
 	<div class="tbl-ctrls">
 		<?php echo form_open($form_url)?>
+
+			<!--
 			<fieldset class="tbl-search right">
 				<a class="btn tn action" href="<?php echo $clear_cache_url ?>"><?php echo lang('delete_variables'); ?></a>
 			</fieldset>
+			-->
+
+			<fieldset class="tbl-search right">
+				<input placeholder="type phrase..." type="text" name="search" value="<?php echo(isset($search) ? $search : ''); ?>">
+				<input class="btn submit" type="submit" value="<?php echo lang('search_variables'); ?>">
+			</fieldset>
+
 			<h1>
 				<?php echo $cp_heading ?>
 			</h1>
-			<?=ee('CP/Alert')->getAllInlines()?>
+			<?php echo ee('CP/Alert')->getAllInlines()?>
 
 			<div class="tbl-search right">
-				<div class="meta-info"><?=$cp_subheading?></div>
+				<div class="meta-info"><?php echo $cp_subheading?></div>
 			</div>
 
 			<?php if (isset($filters)) echo $filters; ?>
 
 			<?php echo $table; ?>
-			<?=$pagination?>
+			<?php echo $pagination?>
 			
 			<?php if ($total > 0) : ?>
 			<fieldset class="tbl-bulk-act hidden">
 				<select name="bulk_action">
-					<option value="">-- <?=lang('with_selected')?> --</option>
-					<option value="remove" data-confirm-trigger="selected" rel="modal-confirm-remove-entry"><?=lang('remove')?></option>
+					<option value="">-- <?php echo lang('with_selected')?> --</option>
+					<option value="remove" data-confirm-trigger="selected" rel="modal-confirm-remove-entry"><?php echo lang('remove')?></option>
 				</select>
-				<button class="btn submit" data-conditional-modal="confirm-trigger"><?=lang('submit')?></button>
+				<button class="btn submit" data-conditional-modal="confirm-trigger"><?php echo lang('submit')?></button>
 			</fieldset>
 			<?php endif; ?>
 
-		<?=form_close()?>
+		<?php echo form_close()?>
 	</div>
 </div>
 

@@ -9,7 +9,7 @@
 
 	<?php echo form_open($form_url, array('id'=>'stash_settings', 'class'=>'settings'))?>
 
-	<?=ee('CP/Alert')->getAllInlines()?>
+	<?php echo ee('CP/Alert')->getAllInlines()?>
 
 	<input type="hidden" value="yes" name="update_mustash_settings">
 

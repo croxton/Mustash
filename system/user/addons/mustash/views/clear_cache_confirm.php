@@ -1,8 +1,8 @@
 <div class="box">
 					
-	<h1><?=$cp_heading?> <span class="req-title"><?=lang('required_fields')?></span></h1>
+	<h1><?php echo $cp_heading?> <span class="req-title"><?php echo lang('required_fields')?></span></h1>
 
-	<?=form_open($form_url, array('class'=>'settings'))?>
+	<?php echo form_open($form_url, array('class'=>'settings'))?>
 				
 		<fieldset class="col-group required">
 			<div class="setting-txt col w-8">
@@ -65,7 +65,7 @@
 		</fieldset>
 	
 
-	<?=form_close()?>
+	<?php echo form_close()?>
 
 </div>
 

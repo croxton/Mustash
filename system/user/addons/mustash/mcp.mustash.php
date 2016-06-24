@@ -134,7 +134,7 @@ class mustash_mcp {
 		{
 			$where += array('keywords' => $search);
 			$base_url->setQueryStringVariable('search', $search);
-			#$vars['keywords'] = htmlentities($keywords);
+			$vars['search'] = htmlentities($search);
 		}
 
 		if ($sort_col && $sort_dir)
@@ -1151,10 +1151,8 @@ class mustash_mcp {
 		if ( ee()->config->item('stash_static_basepath') && ee()->config->item('stash_static_url'))
 		{
 			// Get config items, tidy up for .htaccess
-			$vars = array(
-				'cache_path' => str_replace(' ', '\ ', rtrim(ee()->config->item('stash_static_basepath'), ' \t./').'/'),
-		  		'cache_url'  => rtrim(ee()->config->item('stash_static_url'), ' \t./').'/'
-			);
+			$vars['cache_path'] = str_replace(' ', '\ ', rtrim(ee()->config->item('stash_static_basepath'), ' \t./').'/');
+		  	$vars['cache_url']  = rtrim(ee()->config->item('stash_static_url'), ' \t./').'/';
 		}
 		else
 		{
@@ -1195,10 +1193,16 @@ class mustash_mcp {
      	   ----------------------------------------------------------------------------- */
 
 		$sidebar = ee('CP/Sidebar')->make();
+
+		// variables
 		$nav = $sidebar->addHeader(lang('nav_stash_variables'), ee('CP/URL', $this->url_base));
 
+		// variables submenu
+		$nav_list = $nav->addBasicList();
+		$nav_list->addItem(lang('delete_variables'), ee('CP/URL', $this->url_base.'/clear_cache_confirm'));
+
 		// manually highlight this nav item for the following functions:
-		if ( in_array( debug_backtrace()[1]['function'], array('clear_cache_confirm', 'edit_variable') ))
+		if ( in_array( debug_backtrace()[1]['function'], array('edit_variable') ))
 		{
 			$nav->isActive();
 		}

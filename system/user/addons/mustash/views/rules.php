@@ -8,10 +8,10 @@
             </fieldset>
 
             <h1>
-                <?=$cp_heading?>
+                <?php echo $cp_heading?>
             </h1>
 
-            <?=ee('CP/Alert')->getAllInlines()?>
+            <?php echo ee('CP/Alert')->getAllInlines()?>
 
             <div class="stash_footnote" id="stash-help" aria-expanded="false">
 

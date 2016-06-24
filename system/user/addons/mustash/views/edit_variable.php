@@ -2,7 +2,7 @@
 
 	<h1><?php echo lang('edit_variable')?> (#<?php echo $id?>)</h1>
 
-	<?=form_open($form_url, array('class'=>'settings'))?>
+	<?php echo form_open($form_url, array('class'=>'settings'))?>
 
 		<fieldset class="col-group">
 			<div class="setting-txt col w-4">
@@ -95,5 +95,5 @@
 			<input type="hidden" value="yes" name="update_variable">
 			<input class="btn" type="submit" value="<?php echo lang('save_variable')?>" data-submit-text="<?php echo lang('save_variable')?>" data-work-text="<?php echo lang('btn_saving')?>">
 		</fieldset>
-	<?=form_close()?>
+	<?php echo form_close()?>
 </div>
