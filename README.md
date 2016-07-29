@@ -1,4 +1,4 @@
-#Mustash 2.0.1 
+#Mustash 2.0.2 
 
 Mustash for ExpressionEngine 3.0+.
 
