@@ -154,22 +154,37 @@ class Mustash_lib extends Mustash_base {
 	}
 	
 
-	public function scope_select_options($label='filter_by_scope', $label_value='')
-	{
-		return array(
-			   'site' => lang('var_scope_global'),
-			   'user' 	=> lang('var_scope_user')
-		);				
-	}
-
-	public function bundle_select_options($label='filter_by_bundle', $label_value='')
+	public function scope_select_options($label='', $label_value='')
 	{
 		$list = array();
+
+		if ( ! empty($label) && ! empty($label_value) )
+		{
+			$list = array($label_value => lang($label));
+		}
+
+		$list += array(
+	   		'site' => lang('var_scope_global'),
+	   		'user' 	=> lang('var_scope_user')
+		);	
+			
+		return $list;		
+	}
+
+	public function bundle_select_options($label='', $label_value='')
+	{
+		$list = array();
+
+		if ( ! empty($label) && ! empty($label_value) )
+		{
+			$list = array($label_value => lang($label));
+		}
 
 		if ($bundles = ee()->mustash_model->list_bundles())
 		{
 			$list += $bundles;
 		}
+
 		return $list;
 	}
 	
