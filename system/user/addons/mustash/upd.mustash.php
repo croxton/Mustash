@@ -115,7 +115,7 @@ class Mustash_upd extends Mustash_base {
 		// Update to 2.0.0
         if (version_compare($current, '2.0.0', '<'))
         {
-			$sql[] = "ALTER TABLE ".ee()->db->dbprefix."stash_rules` ADD `notes` TEXT NULL AFTER `pattern`";	
+			$sql[] = "ALTER TABLE `".ee()->db->dbprefix."stash_rules` ADD `notes` TEXT NULL AFTER `pattern`";	
 		}
 
 		foreach ($sql as $query)
