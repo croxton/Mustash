@@ -1,0 +1,299 @@
+/**
+ * Mustash
+ *
+ * @package		Mustash
+ * @author		Mark Croxton
+ * @copyright	Copyright (c) 2015, hallmarkdesign
+ * @link		https://github.com/croxton/Stash/wiki/Mustash
+ * @since		1.0
+ */
+
+.stash_code_format, .stash_code_format:focus {
+	font-family: 'consolas', 'andale mono', 'monaco', monospace;
+	background:#333;
+	color:#AAA;
+	padding:5px;
+	border:0;
+	border-radius:0;
+	margin-bottom: 10px;
+}
+
+.stash_code_format:focus {
+	background:#1F2B33;
+	color:#CCC;
+}
+
+.stash_list {
+	padding-bottom: 1em;
+}
+
+.stash_notes {
+	margin-top: 3px;
+	font-size: .92em;
+}
+
+.stash_url {
+	display: inline-block;
+	font-size: .92em;
+	margin: 4px 0 10px 0;
+	padding: 4px 8px;
+	border: 1px solid #FFD30E;
+	color: #5A4903;
+	background: #FFF8DA;
+	border-radius: 4px;
+}
+
+.stash_instructions {
+	margin: 0 0 1em 1.5em;
+}
+
+.stash_errors {
+	background:#fee;
+	border:1px solid #c99;
+	color:#966;
+	padding:14px;
+	margin-bottom:14px;
+	-webkit-border-radius:4px;
+	-moz-border-radius:4px;
+	border-radius:4px;
+}
+
+.stash_errors ul {
+	list-style:square outside;
+	margin-left:15px;
+}
+
+.stash_locked {
+	font-weight: bold;
+}
+
+.stash_icon {
+	font-size: 14px;
+	padding-right: 3px;
+}
+
+.stash_rules {
+	margin-bottom: 1em;
+}
+
+.stash_rules td {
+	vertical-align: top;
+}
+
+.stash_drag_handle {
+	font-size: 14px;
+}
+
+.stash_remove_row {
+	font-size: 18px;
+	color: #D10053;
+}
+
+.stash_add_row {
+	display: inline-block;
+	cursor: pointer;
+}
+
+.stash_add_row i {
+	font-size: 18px;
+	color: green;
+}
+
+.stash_add_row a {
+	font-size: 14px;
+	color: #657073 ! important;
+	padding-left: 2px;
+}
+
+.stash_add_row a:hover {
+	color: #333 ! important;
+	text-decoration: none;
+}
+
+.stash_control {
+	display: block;
+	margin: 0 0 10px 0;
+}
+
+.stash_control:last-child {
+	margin: 0;
+}
+
+.stash_control_label {
+	display: block;
+	font-size: .92em;
+	padding: 3px 0;
+}
+
+.stash_control select {
+	width: 100%;
+	min-width: 12em;
+	margin-right: 0;
+}
+
+.stash_pattern {
+	min-width: 18em;
+}
+
+.stash_pattern_note {
+	display: block;
+	min-height: auto;
+	height: 148px;
+	margin-top: 10px;
+	color: #969696;
+	font-family: inherit;
+    font-size: 100%;
+}
+
+@media screen and (min-width:56em) {
+
+	.stash_control {
+		border-bottom: 1px dotted #CDCDCD;
+		padding-bottom: 10px;
+	}
+
+	.stash_control:last-child {
+		border: none;
+	}
+
+	.stash_control_label {
+		float: left;
+		width: 22%;
+		padding-right: 10px;
+		padding-bottom: 0;
+	}
+
+	.stash_control select {
+		float: right;
+		width: 68%;
+		min-width: none;
+	}
+
+	.stash_pattern_note {
+		height: 97px;
+	}
+
+}
+
+.stash_control:after {
+	content: " ";
+  	display: table;
+  	clear: both;
+}
+
+div[aria-expanded="false"] {
+	height:0;
+	overflow: hidden;
+	visibility:hidden;
+}   
+
+div[aria-expanded="true"] {
+	height: auto;
+	visibility:visible;
+    /* max-height:4000px; */
+}  
+
+.stash_btn_help {
+	position: relative;
+	top:8px;
+}
+
+.stash_btn_help.active {
+	color: #333 ! important;
+}
+
+.stash_rules_footer {
+	margin-top: 2em;
+}
+
+	.stash_rules_footer-save {
+		float: left;
+	}
+
+	.stash_rules_footer-help {
+		float: right;
+	}
+
+	.stash_rules_footer:before, .stash_rules_footer:after
+	{
+	    content: " ";
+	    display: table;
+	}
+
+	.stash_rules_footer:after {
+	    clear: both;
+	}
+
+.stash_footnote {
+	color: #000;
+	background: #fffdf3;
+	border: 1px solid #ffea8d;
+	border-width: 1px 0;
+	position: relative;
+	z-index: 3;
+	font-size: .92em;
+	line-height: 1.4;
+}
+
+	.stash_footnote[aria-expanded="true"] {
+		padding: 10px;
+		margin: -11px -10px 15px;
+	}
+
+	.stash_footnote h3 {
+		color: #745f00;
+		font-size: 1.2em;
+		margin: 1.5em 0 0 0;
+	}
+
+	.stash_footnote h3:first-child {
+		margin-top:0;
+	}
+
+	.stash_footnote h4 {
+		color: #745f00;
+		font-size: 1.1em;
+		margin: 1.5em 0 .5em 0;
+	}
+
+	.stash_footnote h5 {
+		font-size: 1em;
+		margin-top: 1.5em;
+	}
+
+	.stash_footnote p {
+		margin: 1em 0;
+	}
+
+	.stash_footnote ul {
+		list-style: none;
+		margin: .25em 0 1em 0;
+
+	}
+
+	.stash_footnote li {
+		margin: .5em 0;
+	}
+
+	.stash_footnote strong {
+		font-style: normal;
+	}
+
+	.stash_footnote code {
+		font-family: 'New Courier', Courier, Monospace;
+    	border: 1px solid #e4e4e4;
+    	padding: 2px 4px;
+    	background: #FBF7DE;
+	}
+
+	.stash_footnote code:focus, .stash_footnote code:hover {
+		background-color: #fff8da;
+    	border-color: #ffdc41;
+    }
+
+@media screen and (min-width:56em) {
+	.stash_footnote[aria-expanded="true"] {
+		padding: 40px;
+	}
+}
+
