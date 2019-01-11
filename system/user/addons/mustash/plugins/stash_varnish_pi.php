@@ -169,7 +169,6 @@ class Stash_varnish_pi extends Mustash_plugin {
 
 			// check if we're purging an individual full page
 			// => cached items using the @URI pointer are most likely to represent cached pages
-			// => static caches are always full pages
 			if ( $data['key_name'] 
 				 && $data['key_label'] 
 				 && ( (strncmp($data['key_label'], '@URI:', 5) == 0) || $data['bundle_id'] == 3)
