@@ -21,7 +21,7 @@ class mustash_mcp {
 	public function __construct()
 	{
 		// load EE stuff
-		ee()->load->library('encrypt');
+		//ee()->load->library('encrypt');
 
 		// load Mustash dependencies
 		ee()->load->library('mustash_lib');
@@ -1056,7 +1056,7 @@ class mustash_mcp {
 		);
 
 		// decrypt API key
-		$vars['api_key'] = ee()->encrypt->decode($this->settings['api_key']);
+		$vars['api_key'] = ee('Encrypt')->decode($this->settings['api_key']);
 
 		// API URL
 		$vars['api_url'] = ee()->config->config['site_url']

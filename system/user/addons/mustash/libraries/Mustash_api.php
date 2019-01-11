@@ -21,7 +21,7 @@ class Mustash_api {
 	public function __construct()
 	{
 		ee()->load->library('mustash_lib');
-		ee()->load->library('encrypt');	
+		//ee()->load->library('encrypt');	
 		$this->settings = ee()->mustash_lib->get_settings();
 		ee()->lang->loadfile('mustash');
 		$this->_init();
@@ -68,7 +68,7 @@ class Mustash_api {
 		// API Key?
 		$this->key = ee()->input->get_post('key');
 
-		if(!$this->key || $this->key == '' || $this->key != ee()->encrypt->decode($this->settings['api_key']))
+		if(!$this->key || $this->key == '' || $this->key != ee('Encrypt')->decode($this->settings['api_key']))
 		{
 			$this->response('api_bad_key', 403);
 			exit;			

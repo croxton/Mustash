@@ -5,7 +5,7 @@ return array(
       'docs_url'       => 'https://github.com/croxton/Stash/wiki/Mustash',
       'name'           => 'Mustash',
       'description'    => 'Manage Stash variables and cache-breaking rules.',
-      'version'        => '2.0.3',
+      'version'        => '2.0.4',
       'namespace'      => 'Croxton\Mustash',
       'settings_exist' => TRUE,
 );

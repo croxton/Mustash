@@ -182,7 +182,7 @@ class Mustash_settings_model extends CI_Model {
 				}
 				elseif(in_array($key, $this->_encrypted) && $value != '')
 				{
-					$value = $this->encrypt->encode($value);
+					$value = ee('Encrypt')->encode($value);
 				}
 			}
 			
