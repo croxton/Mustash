@@ -1,71 +1,24 @@
-<div class="box">
+<div class="panel">
     <div class="tbl-ctrls">
 
         <?php echo form_open($form_url, array('id' => 'frm-stash-rules'))?>
 
-            <fieldset class="tbl-search right">
-                <a href="#" class="reveal stash_btn_help" aria-controls="stash-help"><?php echo lang('need_help');?></a>
-            </fieldset>
-
-            <h1>
-                <?php echo $cp_heading?>
-            </h1>
-
-            <?php echo ee('CP/Alert')->getAllInlines()?>
-
-            <div class="stash_footnote" id="stash-help" aria-expanded="false">
-
-                <h3><?php echo lang('rules');?></h3>
-                <p><?php echo lang('rules_help');?></p>
-
-                <h3><?php echo lang('hook');?></h3>
-                <p><?php echo lang('hook_help');?></p>
-
-                <h3><?php echo lang('group');?></h3>
-                <p><?php echo lang('group_help');?></p>
-
-                <h3><?php echo lang('bundle');?></h3>
-                <p><?php echo lang('bundle_help');?></p>
-
-                <h3><?php echo lang('scope');?></h3>
-                <p><?php echo lang('scope_help');?></p>
-
-                <h3><?php echo lang('pattern');?></h3>
-                <p><?php echo lang('pattern_help');?></p>
-
-                <h4><?php echo lang('example_patterns');?></h4>
-                <ul>
-                    <li><code>my_variable</code></li>
-                    <li><code>my_context:my_variable</code></li>
-                    <li><code>#^my_context:my_variable$#</code></li>
-                    <li><code>#^my_context:{url_title}$#</code></li> 
-                </ul>     
-
-                <h3><?php echo lang('available_markers');?></h3>   
-
-                <?php foreach($plugins as $p): ?>
-                    <?php if ( $p->short_name !== 'api') : ?>
-                        <h4><?php echo $p->name ?></h4>
-
-                        <?php foreach($p->get_hooks() as $hook) : ?>
-                            <?php $markers = $hook->get_markers(); ?>
-                            <h5><?php echo stash_translate_hook_name($hook->name, $p->name) ?></h5>
-                            <?php if ( count($markers) > 0) : ?>
-                            <ul>
-                                <?php foreach($markers as $m): ?>
-                                <li><code>{<?php echo $m ?>}</code></li>
-                                <?php endforeach; ?>
-                            </ul>
-                            <?php else: ?>
-                            <p><?php echo lang('no_markers_defined');?></p>
-                            <?php endif; ?>
-
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                <?php endforeach; ?>
 
 
+        <div class="panel-heading">
+            <div class="form-btns form-btns-top">
+                <div class="title-bar title-bar--large">
+                    <h3 class="title-bar__title"><?php echo $cp_heading ?></h3>
+                    <div class="title-bar__extra-tools">
+                        <input class="btn" type="submit" value="<?php echo lang('save_rules')?>" data-submit-text="<?php echo lang('save_rules')?>" data-work-text="<?php echo lang('btn_saving')?>">
+                    </div>
+                </div>
             </div>
+        </div>
+
+        <div class="panel-body">
+            <?php echo ee('CP/Alert')->getAllInlines()?>
+        </div>
 
             <?php echo form_hidden('update_mustash_rules', 'yes'); ?>
 
@@ -82,7 +35,7 @@
                 		<tr>
                 			<th class="first reorder-col">&nbsp;</th>
                 			<th scope="col">
-                                <?php echo lang('filters');?>
+                                <?php echo lang('filters_col');?>
                             </th>
                 			<th scope="col">
                                 <?php echo lang('pattern');?>
@@ -95,8 +48,10 @@
                     <?php foreach($rules as $rule): ?>
                     <tr>
 
-                        <td class="center reorder-col">
-                            <span class="ico reorder stash_drag_handle"></span>
+                        <td class="center stash_reorder_col">
+                            <div class="reorder stash_drag_handle">
+                                <i class="fas fa-bars"></i>
+                            </div>
                         </td>
 
                         <td>
@@ -168,9 +123,10 @@
                     <?php endforeach; ?>
 
                     <tr id="add-template">
-
-                        <td class="center reorder-col">
-                            <span class="ico reorder stash_drag_handle"></span>
+                        <td class="center stash_reorder_col">
+                            <div class="reorder stash_drag_handle">
+                                <i class="fas fa-bars"></i>
+                            </div>
                         </td>
                         <td>
                             <label class="stash_control">
@@ -244,14 +200,23 @@
 
             </div>
 
-            <ul class="toolbar stash_add_row" id="add-row">
-                <li class="add"><a href="#" title="<?php echo lang('add_rule');?>"></a></li>
-            </ul>
+            <div class="panel-body">
+                <ul class="toolbar stash_add_row" id="add-row">
+                    <li class="add">
 
 
-            <fieldset class="stash_rules_footer form-ctrls">
-                <input class="btn" type="submit" value="<?php echo lang('save_rules')?>" data-submit-text="<?php echo lang('save_rules')?>" data-work-text="<?php echo lang('btn_saving')?>">
-            </fieldset>
+                        <button class="button button--secondary" title="<?php echo lang('add_rule');?>">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="panel-footer">
+                <div class="form-btns">
+                    <input class="btn" type="submit" value="<?php echo lang('save_rules')?>" data-submit-text="<?php echo lang('save_rules')?>" data-work-text="<?php echo lang('btn_saving')?>">
+                </div>
+            </div>
 
         <?php echo form_close()?>
     </div>

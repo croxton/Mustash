@@ -1,13 +1,20 @@
-<div class="box">
+<div class="panel">
 
-	<h1>
-	<ul class="toolbar">
-		<li class="settings"><a href="<?php echo $form_url; ?>" title="settings"></a></li>
-	</ul>
-	<?php echo $cp_heading ?>
-	</h1>
+    <?php echo form_open($form_url, array('id'=>'stash_settings', 'class'=>'settings'))?>
 
-	<?php echo form_open($form_url, array('id'=>'stash_settings', 'class'=>'settings'))?>
+    <div class="panel-heading">
+        <div class="form-btns form-btns-top">
+            <div class="title-bar title-bar--large">
+                <h3 class="title-bar__title"><?php echo $cp_heading ?></h3>
+
+                <div class="title-bar__extra-tools">
+                    <input class="button button--primary" type="submit" value="<?php echo lang('save_settings')?>" data-submit-text="<?php echo lang('save_settings')?>" data-work-text="<?php echo lang('btn_saving')?>">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-body">
 
 	<?php echo ee('CP/Alert')->getAllInlines()?>
 
@@ -36,14 +43,14 @@
 		<div class="setting-field col w-8">
 			<?php $index= 0; ?>
 			<?php foreach ($member_groups AS $group_id => $group_name): ?>
-				<?php ++$index; ?>	
-				<label class="choice block">
+				<?php ++$index; ?>
+                <label class="checkbox-label">
 					<?php echo form_checkbox(array(
 							'name' 	  => 'can_manage_bundles[]', 
 							'id'   	  => 'can_manage_bundles_'.$index, 
 							'value'	  => $group_id, 
 							'checked' => (in_array($group_id, $settings['can_manage_bundles'])),
-						)) . NBS . $group_name; ?>
+						)) . '<div class="checkbox-label__text">'. $group_name . '</div>'; ?>
 				</label>
 				
 			<?php endforeach; ?>
@@ -61,13 +68,13 @@
 			<?php $index= 0; ?>
 			<?php foreach ($member_groups AS $group_id => $group_name): ?>
 				<?php ++$index; ?>
-				<label class="choice block">
+                <label class="checkbox-label">
 				<?php echo form_checkbox(array(
 						'name' 	  => 'can_manage_rules[]', 
 						'id'   	  => 'can_manage_rules_'.$index, 
 						'value'	  => $group_id, 
 						'checked' => (in_array($group_id, $settings['can_manage_rules'])),
-					)) . NBS . $group_name; ?>
+					)) . '<div class="checkbox-label__text">'. $group_name . '</div>'; ?>
 				</label>
 	
 			<?php endforeach; ?>
@@ -84,13 +91,13 @@
 			<?php $index= 0; ?>
 			<?php foreach ($member_groups AS $group_id => $group_name): ?>
 				<?php ++$index; ?>
-				<label class="choice block">
+                <label class="checkbox-label">
 				<?php echo form_checkbox(array(
 						'name' 	  => 'can_manage_settings[]', 
 						'id'   	  => 'can_manage_settings_'.$index, 
 						'value'	  => $group_id, 
 						'checked' => (in_array($group_id, $settings['can_manage_settings'])),
-					)) . NBS . $group_name; ?>
+					)) . '<div class="checkbox-label__text">'. $group_name .'</div>'; ?>
 				</label>
 
 			<?php endforeach; ?>
@@ -102,11 +109,12 @@
 			<h3><label for="enabled_plugins_1"><?php echo lang('plugins')?></label></h3>
 			<em><?php echo lang('plugins_help')?></em>
 		</div>
+
 		<div class="setting-field col w-8">
 		<?php $index= 0; ?>
 		<?php foreach($plugin_options AS $plugin => $p): ?>
 			<?php ++$index; ?>
-			<label class="choice block">
+			<label class="checkbox-label">
 			<?php
 				$checkbox_config = array(
 					'name' 	  => 'enabled_plugins[]', 
@@ -121,7 +129,7 @@
 						'checked' => FALSE
 					));
 				}
-			echo form_checkbox($checkbox_config) . NBS . $p->name; ?>
+			echo form_checkbox($checkbox_config) . '<div class="checkbox-label__text">'. $p->name .'</div>'; ?>
 			</label>
 			<?php endforeach; ?>
 		</div>
@@ -186,11 +194,15 @@
 			<?php echo form_input('date_format', $settings['date_format'], 'id="date_format"') ?> 
 		</div>
 	</fieldset>
-		
-	<fieldset class="form-ctrls">
-		<input class="btn" type="submit" value="<?php echo lang('save_settings')?>" data-submit-text="<?php echo lang('save_settings')?>" data-work-text="<?php echo lang('btn_saving')?>">
-	</fieldset>
 
-<?php echo form_close()?>
+    </div>
+
+    <div class="panel-footer">
+        <div class="form-btns">
+            <input class="button button--primary" type="submit" value="<?php echo lang('save_settings')?>" data-submit-text="<?php echo lang('save_settings')?>" data-work-text="<?php echo lang('btn_saving')?>">
+        </div>
+    </div>
+
+    <?php echo form_close()?>
 
 </div>

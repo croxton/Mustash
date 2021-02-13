@@ -78,13 +78,13 @@ $lang = array(
 'api_url_prune_help'		 	=> 'The URL used to trigger cache pruning.',
 
 'can_manage_settings'	 		=> 'Can manage settings',
-'can_manage_settings_help' 		=> 'Select member groups allowed to manage settings.',
+'can_manage_settings_help' 		=> 'Select roles allowed to manage settings (must be user\'s primary role).',
 	
 'can_manage_rules' 				=> 'Can manage cache-breaking rules',
-'can_manage_rules_help' 		=> 'Select member groups allowed to manage cache-breaking rules.',
+'can_manage_rules_help' 		=> 'Select roles allowed to manage cache-breaking rules (must be user\'s primary role).',
 	
 'can_manage_bundles' 			=> 'Can manage bundles',
-'can_manage_bundles_help' 		=> 'Select member groups allowed to manage bundles (variable groups)',
+'can_manage_bundles_help' 		=> 'Select roles allowed to manage bundles (must be user\'s primary role)',
 			
 'list_limit' 					=> 'List limit',
 'list_limit_help' 				=> 'How many rows of results do you wish to display per page in the Variables and Bundles tables?',
@@ -116,7 +116,8 @@ $lang = array(
 'delete_confirm_message' 		=> 'The following cached variables will be deleted:',
 'found_variables_total'			=> 'Found %s variables',
 	
-// filters	
+// filters
+'filters_col' 				    => 'Filters',
 'filter_by_scope' 				=> 'Scope',
 'filter_by_bundle' 				=> 'Bundle',
 

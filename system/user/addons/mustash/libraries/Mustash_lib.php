@@ -241,7 +241,7 @@ class Mustash_lib extends Mustash_base {
 	public function can_access($area) 
 	{
 		if ( isset($this->settings['can_manage_'.$area]))
-		{	
+		{
 			if (ee()->session->userdata['group_id'] == 1) 
 			{
 				// superadmins get a free pass...

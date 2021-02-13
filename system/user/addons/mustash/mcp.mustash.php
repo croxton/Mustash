@@ -1075,9 +1075,9 @@ class mustash_mcp {
 		//  Get member groups, excluding superadmin, guests, pending and banned
 		// --------------------------------------------------------
 
-		$query = ee()->db->select('group_id, group_title')
-		       ->from('member_groups')
-		       ->where_not_in('group_id', array(1, 2, 3, 4))
+		$query = ee()->db->select('role_id as group_id, name as group_title')
+		       ->from('roles')
+		       ->where_not_in('role_id', array(1, 2, 3, 4))
 		       ->order_by('group_title', 'asc')
 		       ->get();
 

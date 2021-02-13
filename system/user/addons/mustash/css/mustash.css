@@ -72,16 +72,22 @@
 	padding-right: 3px;
 }
 
-.stash_rules {
-	margin-bottom: 1em;
-}
-
 .stash_rules td {
 	vertical-align: top;
+	background: var(--ee-bg-0);
+}
+
+.stash_reorder_col {
+	padding-left:20px !important;
 }
 
 .stash_drag_handle {
 	font-size: 14px;
+	cursor:move;
+	border: 1px solid var(--ee-list-item-border);
+	border-radius: 5px;
+	background: var(--ee-bg-1);
+	padding: 8px 12px;
 }
 
 .stash_remove_row {
