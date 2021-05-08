@@ -1,0 +1,20 @@
+{
+  "name": "croxton/mustash",
+  "description": "ExpressionEngine cache-manager for Stash",
+  "version": "3.0.0",
+  "homepage": "https://github.com/croxton/Mustash",
+  "support": {
+    "docs": "https://github.com/croxton/Mustash/blob/master/README.md",
+    "issues": "https://github.com/croxton/Mustash/issues"
+  },
+  "license": "GPL-3.0-or-later",
+  "authors": [
+    {
+      "name": "Mark Croxton",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": ">=7.0.0"
+  }
+}

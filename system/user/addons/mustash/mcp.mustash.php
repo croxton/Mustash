@@ -1015,39 +1015,31 @@ class mustash_mcp {
 
 		if(isset($_POST['update_mustash_settings']))
 		{
-			// validate
-			if( ee()->input->post('license_number'))
-			{
-				// do update		
-				if(ee()->mustash_lib->update_settings($_POST))
-				{	
-					ee()->logger->log_action(ee()->lang->line('log_settings_updated'));
+            // do update
+            if(ee()->mustash_lib->update_settings($_POST))
+            {
+                ee()->logger->log_action(ee()->lang->line('log_settings_updated'));
 
-					ee('CP/Alert')->makeInline('entries-form')
-								  ->asSuccess()
-								  ->withTitle(lang('success'))
-								  ->addToBody(lang('settings_updated'))
-								  ->defer();				
+                ee('CP/Alert')->makeInline('entries-form')
+                              ->asSuccess()
+                              ->withTitle(lang('success'))
+                              ->addToBody(lang('settings_updated'))
+                              ->defer();
 
-					ee()->functions->redirect( ee('CP/URL', $this->url_base.'/settings', ee()->cp->get_url_state()) );
-					exit;			
-				}
-				else
-				{
-					ee('CP/Alert')->makeInline('entries-form')
-								  ->asWarning()
-								  ->withTitle(lang('warning'))
-								  ->addToBody(lang('settings_update_fail'))
-								  ->defer();	
+                ee()->functions->redirect( ee('CP/URL', $this->url_base.'/settings', ee()->cp->get_url_state()) );
+                exit;
+            }
+            else
+            {
+                ee('CP/Alert')->makeInline('entries-form')
+                              ->asWarning()
+                              ->withTitle(lang('warning'))
+                              ->addToBody(lang('settings_update_fail'))
+                              ->defer();
 
-					ee()->functions->redirect( ee('CP/URL', $this->url_base.'/settings', ee()->cp->get_url_state()) );	
-					exit;					
-				}
-			}
-			else
-			{
-				$this->errors['license_number'] = lang('error_missing_license_number');
-			}
+                ee()->functions->redirect( ee('CP/URL', $this->url_base.'/settings', ee()->cp->get_url_state()) );
+                exit;
+            }
 		}
 		
 		$vars = array(

@@ -1,12 +1,22 @@
-<div class="box">
-	<div class="tbl-ctrls">
+<div class="panel">
 		<?php echo form_open($form_url)?>
-			<fieldset class="tbl-search right">
-				<a class="btn tn action" href="<?php echo $add_bundle_url ?>"><?php echo lang('add_bundle'); ?></a>
-			</fieldset>
-			<h1>
-				<?php echo $cp_heading?>
-			</h1>
+
+        <div class="panel-heading">
+            <div class="form-btns form-btns-top">
+                <div class="title-bar title-bar--large">
+                    <h3 class="title-bar__title"><?php echo $cp_heading ?></h3>
+
+                    <div class="title-bar__extra-tools">
+
+                        <a class="button button--primary" href="<?php echo $add_bundle_url ?>"><?php echo lang('add_bundle'); ?></a>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-body">
+
 			<?php echo ee('CP/Alert')->getAllInlines()?>
 
 			<?php echo $table; ?>
@@ -21,9 +31,9 @@
 				<button class="btn submit" data-conditional-modal="confirm-trigger"><?php echo lang('submit')?></button>
 			</fieldset>
 			<?php endif; ?>
+        </div>
 
 		<?php echo form_close()?>
-	</div>
 </div>
 
 <?php

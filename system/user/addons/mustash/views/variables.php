@@ -5,11 +5,16 @@
         <div class="form-btns form-btns-top">
             <div class="title-bar title-bar--large">
                 <h3 class="title-bar__title"><?php echo $cp_heading ?></h3>
-
-                <div class="title-bar__extra-tools">
+                <div class="title-bar__extra-tools stash_title-bar__extra-tools">
                     <fieldset class="tbl-search right">
-                        <input placeholder="type phrase..." type="text" name="search" value="<?php echo(isset($search) ? $search : ''); ?>">
-                        <input class="btn submit" type="submit" value="<?php echo lang('search_variables'); ?>">
+                        <div class="filter-bar">
+                            <div class="filter-bar__item">
+                                <input class="search-input__input input-clear" type="text" name="search" value="<?php echo(isset($search) ? $search : ''); ?>" placeholder="type phrase..." autofocus="autofocus">
+                            </div>
+                            <div class="filter-bar__item">
+                                <input class="button button--primary" type="submit" value="<?php echo lang('search_variables'); ?>">
+                            </div>
+                        </div>
                     </fieldset>
                 </div>
             </div>
@@ -17,12 +22,14 @@
     </div>
 
     <div class="filter-search-bar">
-        <div class="tbl-search right">
+
+        <div class="stash_group-controls">
+            <?php if (isset($filters)) echo $filters; ?>
             <div class="meta-info">
                 <?php echo $cp_subheading?>
             </div>
         </div>
-        <?php if (isset($filters)) echo $filters; ?>
+
     </div>
 
     <div class="panel-body">
@@ -43,9 +50,6 @@
     </div>
     <?php echo form_close()?>
 
-
-
-
     <?php
     $modal_vars = array(
         'name'		=> 'modal-confirm-remove-entry',
@@ -58,6 +62,5 @@
     $modal = $this->make('ee:_shared/modal_confirm_remove')->render($modal_vars);
     ee('CP/Modal')->addModal('remove-entry', $modal);
     ?>
-    </div>
 </div>
 

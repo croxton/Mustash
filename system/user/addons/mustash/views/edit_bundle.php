@@ -1,8 +1,20 @@
-<div class="box">
+<div class="panel">
 
-	<h1><?php echo $cp_heading?> <span class="req-title"><?php echo lang('required_fields')?></span></h1>
+    <?php echo form_open($form_url, array('class'=>'settings'))?>
 
-	<?php echo form_open($form_url, array('class'=>'settings'))?>
+    <div class="panel-heading">
+        <div class="form-btns form-btns-top">
+            <div class="title-bar title-bar--large">
+                <h3 class="title-bar__title"><?php echo $cp_heading ?></h3>
+
+                <div class="title-bar__extra-tools">
+                    <input class="button button--primary" type="submit" value="<?php echo lang('save_bundle')?>" data-submit-text="<?php echo lang('save_settings')?>" data-work-text="<?php echo lang('btn_saving')?>">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-body">
 
 		<?php echo ee('CP/Alert')->getAllInlines()?>
 
@@ -33,10 +45,13 @@
 			</div>
 
 		</fieldset>
-			
-		<fieldset class="form-ctrls">
-			<input class="btn" type="submit" value="<?php echo lang('save_bundle')?>" data-submit-text="<?php echo lang('save_bundle')?>" data-work-text="<?php echo lang('btn_saving')?>">
-		</fieldset>
+    </div>
+
+    <div class="panel-footer">
+        <div class="form-btns">
+            <input class="button button--primary" type="submit" value="<?php echo lang('save_bundle')?>" data-submit-text="<?php echo lang('save_settings')?>" data-work-text="<?php echo lang('btn_saving')?>">
+        </div>
+    </div>
 
 	<?php echo form_close()?>
 </div>

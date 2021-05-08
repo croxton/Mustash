@@ -8,7 +8,7 @@
                 <h3 class="title-bar__title"><?php echo $cp_heading ?></h3>
 
                 <div class="title-bar__extra-tools">
-                    <input class="btn" type="submit" value="<?php echo lang('delete_variables')?>" data-submit-text="<?php echo lang('delete_variables')?>" data-work-text="<?php echo lang('clearing_cache')?>">
+                    <input class="button button--primary" type="submit" value="<?php echo lang('delete_variables')?>" data-submit-text="<?php echo lang('delete_variables')?>" data-work-text="<?php echo lang('clearing_cache')?>">
                 </div>
             </div>
         </div>
@@ -78,7 +78,7 @@
 				  'value'       => $invalidate,
 				  'maxlength'   => '20',
 	              'size'        => '20',
-	              'style'       => 'width:75px;',
+	              'style'       => 'width:75px; display:inline-block;',
 				);
 				echo form_input($data);
 				?>
@@ -90,7 +90,7 @@
 
     <div class="panel-footer">
         <div class="form-btns">
-            <input class="btn" type="submit" value="<?php echo lang('delete_variables')?>" data-submit-text="<?php echo lang('delete_variables')?>" data-work-text="<?php echo lang('clearing_cache')?>">
+            <input class="button button--primary" type="submit" value="<?php echo lang('delete_variables')?>" data-submit-text="<?php echo lang('delete_variables')?>" data-work-text="<?php echo lang('clearing_cache')?>">
         </div>
     </div>
 

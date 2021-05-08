@@ -89,8 +89,16 @@ class Mustash_upd extends Mustash_base {
 		$query = ee()->db->get_where('modules', array('module_name' => $this->mod_class_name));
 	
 		ee()->db->where('module_id', $query->row('module_id'));
-		ee()->db->delete('module_member_groups');
-	
+
+        if (version_compare(APP_VER, '6.0', '>='))
+        {
+            ee()->db->delete('module_member_roles');
+        }
+        else
+        {
+            ee()->db->delete('module_member_groups');
+        }
+
 		ee()->db->where('module_name', $this->mod_class_name);
 		ee()->db->delete('modules');
 

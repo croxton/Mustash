@@ -1,16 +1,13 @@
 <div class="panel">
     <div class="tbl-ctrls">
-
         <?php echo form_open($form_url, array('id' => 'frm-stash-rules'))?>
-
-
 
         <div class="panel-heading">
             <div class="form-btns form-btns-top">
                 <div class="title-bar title-bar--large">
                     <h3 class="title-bar__title"><?php echo $cp_heading ?></h3>
                     <div class="title-bar__extra-tools">
-                        <input class="btn" type="submit" value="<?php echo lang('save_rules')?>" data-submit-text="<?php echo lang('save_rules')?>" data-work-text="<?php echo lang('btn_saving')?>">
+                        <input class="button button--primary" type="submit" value="<?php echo lang('save_rules')?>" data-submit-text="<?php echo lang('save_rules')?>" data-work-text="<?php echo lang('btn_saving')?>">
                     </div>
                 </div>
             </div>
@@ -111,13 +108,15 @@
                             <?php echo form_input('pattern[]', $rule['pattern'], 'class="stash_pattern" placeholder="e.g. #^products/{url_title}$#"') ?>
                             <textarea name="notes[]" rows="3" cols="50" class="stash_pattern_note" placeholder="Your notes about this rule"><?php echo $rule['notes'];?></textarea>
                         </td>
-                       
+
                         <td class="center">
-                            <div class="toolbar-wrap">
-                                <ul class="toolbar">
-                                    <li class="remove"><a href="#" title="<?php echo lang('remove_rule');?>" class="stash_remove_row"></a></li>
-                                </ul>                        
-                            </div>
+                            <button type="button" rel="remove_row" class="stash_remove_row button button--small button--default">
+                                <span class="grid-field__column-tool danger-link" title="remove row">
+                                    <i class="fas fa-fw fa-trash-alt">
+                                        <span class="hidden"><?php echo lang('remove_rule');?></span>
+                                    </i>
+                                </span>
+                            </button>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -187,11 +186,13 @@
                         </td>
                        
                         <td class="center">
-                            <div class="toolbar-wrap">
-                                <ul class="toolbar">
-                                    <li class="remove"><a href="#" title="<?php echo lang('remove_rule');?>" class="stash_remove_row"></a></li>
-                                </ul>                        
-                            </div>
+                            <button type="button" rel="remove_row" class="stash_remove_row button button--small button--default">
+                                <span class="grid-field__column-tool danger-link" title="remove row">
+                                    <i class="fas fa-fw fa-trash-alt">
+                                        <span class="hidden"><?php echo lang('remove_rule');?></span>
+                                    </i>
+                                </span>
+                            </button>
                         </td>
 
                     </tr>
@@ -203,18 +204,18 @@
             <div class="panel-body">
                 <ul class="toolbar stash_add_row" id="add-row">
                     <li class="add">
-
-
-                        <button class="button button--secondary" title="<?php echo lang('add_rule');?>">
-                            <i class="fas fa-plus"></i>
-                        </button>
+                        <div class="button-group">
+                            <button type="button" rel="add_row" class="button button--default button--small js-grid-add-row">
+                                <?php echo lang('add_rule');?>
+                            </button>
+                        </div>
                     </li>
                 </ul>
             </div>
 
             <div class="panel-footer">
                 <div class="form-btns">
-                    <input class="btn" type="submit" value="<?php echo lang('save_rules')?>" data-submit-text="<?php echo lang('save_rules')?>" data-work-text="<?php echo lang('btn_saving')?>">
+                    <input class="button button--primary" type="submit" value="<?php echo lang('save_rules')?>" data-submit-text="<?php echo lang('save_rules')?>" data-work-text="<?php echo lang('btn_saving')?>">
                 </div>
             </div>
 

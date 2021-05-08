@@ -1,7 +1,14 @@
-<div class="box">
-    <div class="tbl-ctrls">
+<div class="panel">
 
-		<h1><?php echo $cp_heading; ?></h1>
+    <div class="panel-heading">
+        <div class="form-btns form-btns-top">
+            <div class="title-bar title-bar--large">
+                <h3 class="title-bar__title"><?php echo $cp_heading ?></h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-body">
 
 		<?php echo ee('CP/Alert')->getAllInlines()?>
 
@@ -61,8 +68,8 @@ RewriteRule ^(index.php/*)*(.*)(/*) <?php echo $cache_url?><?php echo $site->sit
 #################################################################################
 
 # -------------------------------------------------------------------------------
-# Officially supported method to remove index.php from ExpressionEngine URLs
-# See: http://ellislab.com/expressionengine/user-guide/urls/remove_index.php.html
+# Remove index.php from ExpressionEngine URLs
+# See: https://docs.expressionengine.com/latest/installation/best-practices.html#removing-indexphp-from-your-urls
 # -------------------------------------------------------------------------------
 
 # Removes index.php from ExpressionEngine URLs
@@ -73,7 +80,7 @@ RewriteRule (.*?)index\.php/*(.*) /$1$2 [R=301,NE,L]
 # Directs all EE web requests through the site index file
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ /index.php/$1 [L]
+RewriteRule ^(.*)$ /index.php?/$1 [L]
 
 </IfModule>
 </textarea>
