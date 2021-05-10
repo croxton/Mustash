@@ -1,7 +1,7 @@
 {
   "name": "croxton/mustash",
   "description": "ExpressionEngine cache-manager for Stash",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "homepage": "https://github.com/croxton/Mustash",
   "support": {
     "docs": "https://github.com/croxton/Mustash/blob/master/README.md",
