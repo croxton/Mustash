@@ -1,8 +1,19 @@
-<div class="box">
-
-	<h1><?php echo lang('edit_variable')?> (#<?php echo $id?>)</h1>
+<div class="panel">
 
 	<?php echo form_open($form_url, array('class'=>'settings'))?>
+
+    <div class="panel-heading">
+        <div class="form-btns form-btns-top">
+            <div class="title-bar title-bar--large">
+                <h3 class="title-bar__title"><?php echo $cp_heading ?></h3>
+                <div class="title-bar__extra-tools">
+                    <input class="button button--primary" type="submit" value="<?php echo lang('save_variable')?>" data-submit-text="<?php echo lang('save_variable')?>" data-work-text="<?php echo lang('btn_saving')?>">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-body">
 
 		<fieldset class="col-group">
 			<div class="setting-txt col w-4">
@@ -91,9 +102,15 @@
 			</div>
 		</fieldset>
 
-		<fieldset class="form-ctrls">
-			<input type="hidden" value="yes" name="update_variable">
-			<input class="btn" type="submit" value="<?php echo lang('save_variable')?>" data-submit-text="<?php echo lang('save_variable')?>" data-work-text="<?php echo lang('btn_saving')?>">
-		</fieldset>
+    </div>
+
+    <div class="panel-footer">
+        <div class="form-btns">
+            <input type="hidden" value="yes" name="update_variable">
+            <input class="button button--primary" type="submit" value="<?php echo lang('save_variable')?>" data-submit-text="<?php echo lang('save_variable')?>" data-work-text="<?php echo lang('btn_saving')?>">
+        </div>
+    </div>
+
 	<?php echo form_close()?>
+
 </div>
