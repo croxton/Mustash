@@ -17,8 +17,9 @@ class mustash_mcp {
 	public $url_base = '';
 
 	protected $errors = array();
-	
-	public function __construct()
+    private $settings;
+
+    public function __construct()
 	{
 		// load EE stuff
 		//ee()->load->library('encrypt');

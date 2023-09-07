@@ -93,11 +93,18 @@ abstract class Mustash_base {
 	protected $site_id;
 
 
+    /**
+     * Doc URL
+     *
+     * @var string
+     * @access private
+     */
+    private $mod_docs_url;
 	// --------------------------------------------------------------------
 	// METHODS
 	// --------------------------------------------------------------------
 
-	/**
+    /**
 	 * Constructor
 	 *
 	 * @access     public
