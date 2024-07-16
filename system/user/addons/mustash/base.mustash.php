@@ -56,6 +56,13 @@ abstract class Mustash_base {
 	 */
 	protected $mod_class_name;
 
+	/**
+	 * Docs shortcut
+	 *
+	 * @var        string
+	 * @access     protected
+	 */
+	protected $mod_docs_url;
 
 	/**
 	 * Extension settings

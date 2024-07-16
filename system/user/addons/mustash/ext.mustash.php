@@ -40,6 +40,17 @@ class Mustash_ext extends Mustash_base {
 	private static $plugin_hooks = array();
 		
 	/**
+	 * Public properties
+	 *
+	 * @var        string
+	 * @access     public
+	 */
+	public $name;
+	public $version;
+	public $description;
+	public $settings_exist;
+		
+	/**
 	 * Constructor
 	 *
 	 * @param 	mixed	Settings array or empty string if none exist.
